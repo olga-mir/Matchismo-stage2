@@ -6,10 +6,10 @@
 //  Copyright (c) 2014 Olga. All rights reserved.
 //
 
-#import "PlayingDeck.h"
+#import "PlayingCardDeck.h"
 #import "PlayingCard.h"
 
-@implementation PlayingDeck
+@implementation PlayingCardDeck
 
 - (instancetype)init
 {

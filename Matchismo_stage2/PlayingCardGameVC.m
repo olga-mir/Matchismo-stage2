@@ -7,6 +7,7 @@
 //
 
 #import "PlayingCardGameVC.h"
+#import "PlayingCardDeck.h"
 
 @interface PlayingCardGameVC ()
 
@@ -14,14 +15,17 @@
 
 @implementation PlayingCardGameVC
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+-(Deck *)createDeck
 {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        // Custom initialization
-    }
-    return self;
+  NSLog(@"PlayingCardGameVC: createDeck");
+  return [[PlayingCardDeck alloc] init];
 }
+
+-(NSUInteger)numOfCardsToMatch {
+  NSLog(@"PlayingCardGameVC: set num of cards to match (2 for the playing card game)");
+  return 2;
+}
+
 
 - (void)viewDidLoad
 {
