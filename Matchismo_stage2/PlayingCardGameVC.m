@@ -8,29 +8,69 @@
 
 #import "PlayingCardGameVC.h"
 #import "PlayingCardDeck.h"
+#import "PlayingCardView.h"
+#import "PlayingCard.h"
 
 @interface PlayingCardGameVC ()
+
+@property (weak, nonatomic) IBOutlet PlayingCardView *playingCardView;
+
+@property (strong, nonatomic) PlayingCardDeck *deck; // TODO - move to right place
 
 @end
 
 @implementation PlayingCardGameVC
 
--(Deck *)createDeck
+// TODO - move to the right place
+- (Deck *)deck
+{
+  if (!_deck) _deck = [[PlayingCardDeck alloc] init];
+  return _deck;
+}
+
+- (void)drawRandomPlayingCard
+{
+  Card *card = [self.deck drawRandomCard];
+  if ([card isKindOfClass:[PlayingCard class]]) {
+    PlayingCard *playingCard = (PlayingCard *)card;
+    self.playingCardView.rank = playingCard.rank;
+    self.playingCardView.suit = playingCard.suit;
+  }
+}
+
+- (Deck *)createDeck
 {
   NSLog(@"PlayingCardGameVC: createDeck");
   return [[PlayingCardDeck alloc] init];
 }
 
--(NSUInteger)numOfCardsToMatch {
+- (NSUInteger)numOfCardsToMatch {
   NSLog(@"PlayingCardGameVC: set num of cards to match (2 for the playing card game)");
   return 2;
+}
+
+- (IBAction)swipe:(UISwipeGestureRecognizer *)sender {
+  // TODO - here for dev phase - need to be moved to parent class
+  
+  if (!self.playingCardView.faceUp) {
+    [self drawRandomPlayingCard];
+  }
+  self.playingCardView.faceUp = !self.playingCardView.faceUp;
 }
 
 
 - (void)viewDidLoad
 {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view.
+  [super viewDidLoad];
+  
+  NSLog(@"PlayingCardGameVC: viewDidLoad");
+  
+  // TODO - here for dev phase - need to be moved to parent class
+
+  self.playingCardView.suit = @"♥"; // temp code to test
+  self.playingCardView.rank = 9;  // temp code to test
+  
+  [self.playingCardView addGestureRecognizer:[[UIPinchGestureRecognizer alloc] initWithTarget:self.playingCardView action:@selector(pinch:)]];
 }
 
 - (void)didReceiveMemoryWarning

@@ -30,6 +30,8 @@
 		77349D481980CE7400B9C1F4 /* SetDeck.m in Sources */ = {isa = PBXBuildFile; fileRef = 77349D471980CE7400B9C1F4 /* SetDeck.m */; };
 		77349D4B1980D2E500B9C1F4 /* PlayingCardDeck.m in Sources */ = {isa = PBXBuildFile; fileRef = 77349D4A1980D2E500B9C1F4 /* PlayingCardDeck.m */; };
 		77349D4E1980D32000B9C1F4 /* CardGameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 77349D4D1980D32000B9C1F4 /* CardGameViewController.m */; };
+		77349D531980D51C00B9C1F4 /* PlayingCardView.m in Sources */ = {isa = PBXBuildFile; fileRef = 77349D521980D51C00B9C1F4 /* PlayingCardView.m */; };
+		77349D561983140100B9C1F4 /* CardView.m in Sources */ = {isa = PBXBuildFile; fileRef = 77349D551983140100B9C1F4 /* CardView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -80,6 +82,10 @@
 		77349D4A1980D2E500B9C1F4 /* PlayingCardDeck.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayingCardDeck.m; sourceTree = "<group>"; };
 		77349D4C1980D32000B9C1F4 /* CardGameViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CardGameViewController.h; sourceTree = "<group>"; };
 		77349D4D1980D32000B9C1F4 /* CardGameViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CardGameViewController.m; sourceTree = "<group>"; };
+		77349D511980D51C00B9C1F4 /* PlayingCardView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayingCardView.h; sourceTree = "<group>"; };
+		77349D521980D51C00B9C1F4 /* PlayingCardView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayingCardView.m; sourceTree = "<group>"; };
+		77349D541983140100B9C1F4 /* CardView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CardView.h; sourceTree = "<group>"; };
+		77349D551983140100B9C1F4 /* CardView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CardView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -183,6 +189,10 @@
 		77349D281980CACA00B9C1F4 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				77349D501980D4FD00B9C1F4 /* SetCardView */,
+				77349D4F1980D4F300B9C1F4 /* PlayingCardView */,
+				77349D541983140100B9C1F4 /* CardView.h */,
+				77349D551983140100B9C1F4 /* CardView.m */,
 			);
 			name = View;
 			sourceTree = "<group>";
@@ -192,7 +202,7 @@
 			children = (
 				77349D361980CE0000B9C1F4 /* SetGame */,
 				77349D351980CDF200B9C1F4 /* PlayingCardGame */,
-				77349D341980CDE400B9C1F4 /* General Card and Deck */,
+				77349D341980CDE400B9C1F4 /* GeneralCardAndDeck */,
 				77349D311980CCB500B9C1F4 /* CardMatchingGame.h */,
 				77349D321980CCB500B9C1F4 /* CardMatchingGame.m */,
 			);
@@ -212,7 +222,7 @@
 			name = ViewController;
 			sourceTree = "<group>";
 		};
-		77349D341980CDE400B9C1F4 /* General Card and Deck */ = {
+		77349D341980CDE400B9C1F4 /* GeneralCardAndDeck */ = {
 			isa = PBXGroup;
 			children = (
 				77349D371980CE1900B9C1F4 /* Card.h */,
@@ -220,7 +230,7 @@
 				77349D3A1980CE2400B9C1F4 /* Deck.h */,
 				77349D3B1980CE2400B9C1F4 /* Deck.m */,
 			);
-			name = "General Card and Deck";
+			name = GeneralCardAndDeck;
 			sourceTree = "<group>";
 		};
 		77349D351980CDF200B9C1F4 /* PlayingCardGame */ = {
@@ -243,6 +253,22 @@
 				77349D471980CE7400B9C1F4 /* SetDeck.m */,
 			);
 			name = SetGame;
+			sourceTree = "<group>";
+		};
+		77349D4F1980D4F300B9C1F4 /* PlayingCardView */ = {
+			isa = PBXGroup;
+			children = (
+				77349D511980D51C00B9C1F4 /* PlayingCardView.h */,
+				77349D521980D51C00B9C1F4 /* PlayingCardView.m */,
+			);
+			name = PlayingCardView;
+			sourceTree = "<group>";
+		};
+		77349D501980D4FD00B9C1F4 /* SetCardView */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = SetCardView;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -347,7 +373,9 @@
 				77349D4B1980D2E500B9C1F4 /* PlayingCardDeck.m in Sources */,
 				77349D331980CCB500B9C1F4 /* CardMatchingGame.m in Sources */,
 				77349D3F1980CE4200B9C1F4 /* PlayingCard.m in Sources */,
+				77349D531980D51C00B9C1F4 /* PlayingCardView.m in Sources */,
 				77349D041980CA6200B9C1F4 /* cardGameAppDelegate.m in Sources */,
+				77349D561983140100B9C1F4 /* CardView.m in Sources */,
 				77349D451980CE6400B9C1F4 /* SetCard.m in Sources */,
 				77349D301980CBBF00B9C1F4 /* SetGameVC.m in Sources */,
 				77349D001980CA6200B9C1F4 /* main.m in Sources */,
