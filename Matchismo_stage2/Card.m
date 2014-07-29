@@ -7,15 +7,13 @@
 //
 
 #import "Card.h"
+#import "Utils.h"
 
 @implementation Card
 
-- (int)match:(NSArray *)otherCards {
-  
-  // virtual method
-  // TODO - raise exception / check the abstrsct in the Obj-C
-  NSLog(@"Must implement this method!");
-  return 0;
+- (int)match:(NSArray *)otherCards
+{
+  mustOverride();
 }
 
 @end

@@ -9,12 +9,18 @@
 #import "CardGameViewController.h"
 #import "CardMatchingGame.h"
 #import "CardView.h"
+#import "Grid.h"
+#import "Utils.h"
 
 @interface CardGameViewController ()
 
 @property (strong, nonatomic) CardMatchingGame *game;
 
-//@property (strong, nonatomic) NSMutableArray *cards; // of Card's (models)
+// grid of cards currently in game
+@property (strong, nonatomic) Grid *grid;
+
+// A general view that specifies the bounds of the cards area
+@property (weak, nonatomic) IBOutlet UIView *cardsDisplayArea;
 
 @property (weak, nonatomic) IBOutlet UILabel *scoreLabel;
 @property (weak, nonatomic) IBOutlet UIButton *dealButton;
@@ -25,17 +31,9 @@
 
 @implementation CardGameViewController
 
-- (instancetype)init
+#pragma mark - Properties
+- (CardMatchingGame *)game
 {
-  NSLog(@"CardGameViewController: init");
-  self = [super init];
-  if (self) {
-  }
-  return self;
-}
-
-
-- (CardMatchingGame *)game {
   if(!_game) _game = [[CardMatchingGame alloc] initWithCardCount:[self defaultNumOfCardsInGame]
                                                        usingDeck:[self createDeck]
                                                       cardsInSet:[self numOfCardsToMatch]];
@@ -46,7 +44,91 @@
   return _game;
 }
 
-#pragma mark - Outlets
+- (Grid *)grid
+{
+  if (!_grid) {
+    NSLog(@"Alloc new grid");
+    _grid = [[Grid alloc] init];
+    
+    _grid.size = self.cardsDisplayArea.frame.size;
+    _grid.cellAspectRatio = 0.6;
+    _grid.minimumNumberOfCells = [self defaultNumOfCardsInGame];
+    
+  }
+  return _grid;
+}
+
+# pragma mark - Lifecycle
+
+- (void)viewDidLoad
+{
+  NSLog(@"CardGameVC: viewDidLoad");
+  
+  [super viewDidLoad];
+  
+  // Update the grid
+  self.grid.size = self.cardsDisplayArea.frame.size; // it could change due to rotate
+  self.grid.minimumNumberOfCells = self.game.curNumberOfCardsInGame;
+  //self.grid.cellAspectRatio = // TODO - get ratio per Set/Playing class
+  NSLog(@"CardGameVC: self.game.curNumberOfCardsInGame: %d", self.game.curNumberOfCardsInGame);
+  NSLog(@"%@", self.grid);
+  
+  SYSASSERT(self.grid.inputsAreValid, @"Can't layout the views because grid inputs are invalid"); // TODO - temp. do something sensible later
+
+  [self.cardsDisplayArea setBackgroundColor:[UIColor blackColor]];
+  //self.cardsDisplayArea.alpha = 1;
+//  self.cardsDisplayArea.opaque = YES;
+  self.cardsDisplayArea.userInteractionEnabled = NO;
+  
+  
+  
+    // populate the grid with the card views
+    for (int c = 0; c < self.game.curNumberOfCardsInGame; c++) {
+      
+//      CGFloat x = 0;
+//      CGFloat y = 0;
+      
+      CGRect frame;
+      frame.origin = CGPointZero;
+      frame.size = self.grid.cellSize;
+      
+      Card *card = [self.game cardAtIndex:c];
+      CardView *cardView = [self createCardViewWithFrame:frame withCard:card];
+      
+      //    [cardView addGestureRecognizer:[[UISwipeGestureRecognizer alloc] initWithTarget:cardView action:@selector(swipe:)]];
+      
+      cardView.opaque = YES;
+      [self.cardsDisplayArea addSubview:cardView];
+      
+      frame.origin.x += 80;
+      UIView *v = [[UIView alloc] initWithFrame:frame];
+      [v setBackgroundColor:[UIColor redColor]];
+      v.opaque = YES;
+      [self.cardsDisplayArea addSubview:v];
+      
+    }
+/*
+  CGRect frame;
+  frame.origin = CGPointZero;
+  frame.origin.x += 80;
+  UIView *v = [[UIView alloc] initWithFrame:frame];
+  [v setBackgroundColor:[UIColor redColor]];
+  [self.cardsDisplayArea addSubview:v];
+ */
+
+ 
+//CGSize cellSize;        // will be made as large as possible
+//NSUInteger rowCount;
+//NSUInteger columnCount;
+    
+    // origin row and column are zero
+    
+//- (CGPoint)centerOfCellAtRow:(NSUInteger)row inColumn:(NSUInteger)column;
+//- (CGRect)frameOfCellAtRow:(NSUInteger)row inColumn:(NSUInteger)column;
+  
+}
+
+#pragma mark - User Interface
 
 // at this stage the deal button doesn't prompt the user if he really intends to drop current game
 - (IBAction)touchDealButton:(id)sender
@@ -59,11 +141,9 @@
 
 - (IBAction)swipe:(UISwipeGestureRecognizer *)sender {
   
-//  int chosenCardIndex = [self.cardsViews indexOfObject:sender];
-  int chosenCardIndex = [self.view.subviews indexOfObject:sender];
+  int chosenCardIndex = [self.cardsDisplayArea.subviews indexOfObject:sender];
   
-//  CardView *cardView = [self.cardsViews objectAtIndex:chosenCardIndex];
-  CardView *cardView = [self.view.subviews objectAtIndex:chosenCardIndex];
+  CardView *cardView = [self.cardsDisplayArea.subviews objectAtIndex:chosenCardIndex];
   cardView.faceUp = !cardView.faceUp;
   
   NSLog(@"Chose card at index: %d", chosenCardIndex);
@@ -106,52 +186,38 @@
   return [UIImage imageNamed:card.isChosen ? @"cardfront" : @"cardback"];
 }
 
-- (void)viewDidLoad
-{
-  NSLog(@"CardGameVC: viewDidLoad");
-  
-  [super viewDidLoad];
-  
-  for (int c = 0; c < self.game.curNumberOfCardsInGame; c++) {
-   
-    CardView *cardView = [self createCardViewWithCard:[self.game cardAtIndex:c]];
-
-//    [cardView addGestureRecognizer:[[UISwipeGestureRecognizer alloc] initWithTarget:cardView action:@selector(swipe:)]];
-    
-    [self.view addSubview:cardView];
-  }
-}
 
 
-#pragma mark - Abstract Methods
-// TODO - raise exeptions in these methods / other proper abstract class techniques?
-
-// createDeck method is an abstract method.
-// the VCs who inherit from it will create their own decks depending on their type
+#pragma mark - Virtual Methods
+// Used throw exception mechanism in order to enforce the abstracness of these methods.
+// Use of protocol or compiler warnings like __attribute__((unavailable(msg)))
+// will result in compile time error (which is good),
+// but will prevent from calling these functions in this base class.
+// Since this "error" must be handled and fixed in development stage
+// it is appropriate here to use an assertion or throw an exception.
+// The exception is preferrable though, because in this case there is
+// no need in return statement that would be more of a workaround
 - (Deck *)createDeck
 {
-  NSLog(@"Abstract method %@ must be implemented in a subclass", NSStringFromSelector(_cmd));
-  return nil;
+  mustOverride();
 }
 
 - (NSUInteger)numOfCardsToMatch
 {
-  NSLog(@"Abstract method %@ must be implemented in a subclass", NSStringFromSelector(_cmd));
-  return 0;
+  mustOverride();
 }
 
 - (NSUInteger)defaultNumOfCardsInGame
 {
-  NSLog(@"Abstract method %@ must be implemented in a subclass", NSStringFromSelector(_cmd));
-  return 0;
+  mustOverride();
 }
 
-- (CardView *)createCardViewWithCard:(Card *)card
+- (CardView *)createCardViewWithFrame:(CGRect)frame withCard:(Card *)card
 {
-  NSLog(@"Abstract method %@ must be implemented in a subclass", NSStringFromSelector(_cmd));
-  return nil;
+  mustOverride();
 }
-
+ 
 
 @end
+
 

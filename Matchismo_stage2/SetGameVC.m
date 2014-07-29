@@ -7,19 +7,28 @@
 //
 
 #import "SetGameVC.h"
+#import "SetCardDeck.h"
+#import "SetCard.h"
+#import "SetCardView.h"
 
 @interface SetGameVC ()
+@property (weak, nonatomic) IBOutlet UIButton *moreCardsButton;
 
 @end
 
 @implementation SetGameVC
 
+// Request more cards to be added to the current Set game
+- (IBAction)touchMoreCardsButton:(id)sender
+{
+}
 
 
 - (void)viewDidLoad
 {
-    [super viewDidLoad];
+  [super viewDidLoad];
     // Do any additional setup after loading the view.
+  
 }
 
 - (void)didReceiveMemoryWarning
@@ -28,15 +37,43 @@
     // Dispose of any resources that can be recreated.
 }
 
-/*
-#pragma mark - Navigation
 
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+#pragma mark - Virtual Methods Implementation
+
+#define DEFAULT_NUM_OF_CARDS_IN_SET_CARD_GAME 16
+#define NUMBER_OF_CARDS_TO_MATCH_IN_SET_CARD_GAME 3
+
+- (Deck *)createDeck
 {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+  NSLog(@"SetGameVC: createDeck");
+  return [[SetCardDeck alloc] init];
 }
-*/
+
+- (NSUInteger)numOfCardsToMatch {
+  NSLog(@"SetGameVC: set num of cards to match 3");
+  return NUMBER_OF_CARDS_TO_MATCH_IN_SET_CARD_GAME;
+}
+
+- (NSUInteger)defaultNumOfCardsInGame {
+  NSLog(@"SetGameVC: defaultNumOfCardsInGame");
+  return DEFAULT_NUM_OF_CARDS_IN_SET_CARD_GAME;
+}
+
+
+- (CardView *)createCardViewWithFrame:(CGRect)frame withCard:(Card *)card
+{
+  SetCardView *setCardView = nil;
+  
+  if ([card isKindOfClass:[SetCard class]]) {
+    SetCard *setCard = (SetCard *)card;
+    setCardView = [[SetCardView alloc] initWithFrame:frame withCard:setCard];
+  } else {
+    // TODO - exception
+    NSLog(@"PlayingCardGameVC: createCardViewWithCard - incompatible parameter type");
+  }
+  
+  return setCardView;
+}
+
 
 @end

@@ -9,10 +9,12 @@
 #import <UIKit/UIKit.h>
 #import "CardView.h"
 
+
 @class Card;
+@class PlayingCard;
 
 @interface PlayingCardView : CardView
 
-- (instancetype)initWithCard:(Card *)card;
+- (instancetype)initWithFrame:(CGRect)frame withCard:(PlayingCard *)card;
 
 @end

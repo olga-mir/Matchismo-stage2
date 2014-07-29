@@ -69,7 +69,7 @@
     self.deck = deck;
     if (![self dealCards:count]) {
       // there was not enough cards, so the deal failed
-      self = nil;
+      self = nil; // TODO - exception?
     } else {
       self.numOfCardsToMatch = numOfCardsToMatch;
     }

@@ -8,6 +8,7 @@
 
 #import "PlayingCardView.h"
 #import "PlayingCard.h"
+#import "Utils.h"
 
 @interface PlayingCardView()
 
@@ -19,6 +20,30 @@
 @end
 
 @implementation PlayingCardView
+
+#pragma mark - Initialization
+// designated initializer
+// it is provided that the card is the Playing Card and is not checked here.
+- (instancetype)initWithFrame:(CGRect)frame withCard:(PlayingCard *)playingCard
+{
+  self = [super initWithFrame:frame];
+  
+  if (self) {
+    SYSASSERT([playingCard isKindOfClass:[PlayingCard class]], @"Type mismatch: Playing card view cannot be created without valid card of PlayingCard type");
+    self.rank = playingCard.rank;
+    self.suit = playingCard.suit;
+  }
+  return self;
+}
+
+- (void)setup
+{
+  self.backgroundColor = nil; // can be also [UIColor clearColor] - it is only a style thing
+  self.opaque = NO;
+  self.contentMode = UIViewContentModeRedraw;
+}
+
+
 
 #pragma mark - Properties
 // TODO  - add validation code
@@ -218,51 +243,12 @@
   CGContextRestoreGState(UIGraphicsGetCurrentContext());
 }
 
-#pragma mark - Initialization
-- (void)setup
-{
-  self.backgroundColor = nil; // can be also [UIColor clearColor] - it is only a style thing
-  self.opaque = NO;
-  self.contentMode = UIViewContentModeRedraw;
-}
-
-static const CGSize CARD_SIZE = {60, 180};
-- (instancetype)initWithCard:(Card *)card
-{
-  NSLog(@"PlayingCardView: initWithCard");
-  
-  CGRect frame;
-  frame.origin = CGPointZero;
-  frame.size = CARD_SIZE;
-  
-  //self = [[PlayingCardView alloc] initWithFrame:frame];
-
-  if ([card isKindOfClass:[PlayingCard class]]) {
-    PlayingCard *playingCard = (PlayingCard *)card;
-    self.rank = playingCard.rank;
-    self.suit = playingCard.suit;
-  } else {
-    NSLog(@"PlayingCardView: initWithCard - the 'card' parameter is of incompatible type"); // TODO - exception
-  }
-  
-  return self;
-}
-
 
 
 /*
 - (void)awakeFromNib
 {
   [self setup];
-}
-
-- (id)initWithFrame:(CGRect)frame
-{
-  self = [super initWithFrame:frame];
-  if (self) {
-    // Initialization code
-  }
-  return self;
 }
 */
 

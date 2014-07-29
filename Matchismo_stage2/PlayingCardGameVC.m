@@ -71,13 +71,13 @@
 }
 
 
-- (CardView *)createCardViewWithCard:(Card *)card
+- (CardView *)createCardViewWithFrame:(CGRect)frame withCard:(Card *)card;
 {
   PlayingCardView *playingCardView = nil;
   
   if ([card isKindOfClass:[PlayingCard class]]) {
     PlayingCard *playingCard = (PlayingCard *)card;
-    playingCardView = [[PlayingCardView alloc] initWithCard:playingCard];
+    playingCardView = [[PlayingCardView alloc] initWithFrame:frame withCard:playingCard];
   } else {
     // TODO - exception
     NSLog(@"PlayingCardGameVC: createCardViewWithCard - incompatible parameter type");

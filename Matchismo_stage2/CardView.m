@@ -7,6 +7,8 @@
 //
 
 #import "CardView.h"
+#import "SetCard.h"
+#import "Utils.h"
 
 @implementation CardView
 
@@ -16,29 +18,11 @@
   [self setNeedsDisplay];
 }
 
-- (id)initWithFrame:(CGRect)frame
+- (instancetype)initWithFrame:(CGRect)frame Card:(Card *)setCard
 {
-    self = [super initWithFrame:frame];
-    if (self) {
-        // Initialization code
-    }
-    return self;
+  mustOverride();
 }
 
-- (CardView *)createCardViewWithCard:(Card *)card // TODO - maybe should be instancetype?
-{
-  // TODO -  exception.
-  NSLog(@"CardView: createCardViewWithCard - abstract method. Need to be implemented in subclass");
-  return nil;
-}
 
-/*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect
-{
-    // Drawing code
-}
-*/
 
 @end
