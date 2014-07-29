@@ -13,64 +13,23 @@
 
 @interface PlayingCardGameVC ()
 
-@property (weak, nonatomic) IBOutlet PlayingCardView *playingCardView;
-
-@property (strong, nonatomic) PlayingCardDeck *deck; // TODO - move to right place
-
 @end
+
 
 @implementation PlayingCardGameVC
 
-// TODO - move to the right place
-- (Deck *)deck
+- (instancetype)init
 {
-  if (!_deck) _deck = [[PlayingCardDeck alloc] init];
-  return _deck;
+  NSLog(@"PlayingCardGameVC: init");
+  self = [super init];
+  return self;
 }
-
-- (void)drawRandomPlayingCard
-{
-  Card *card = [self.deck drawRandomCard];
-  if ([card isKindOfClass:[PlayingCard class]]) {
-    PlayingCard *playingCard = (PlayingCard *)card;
-    self.playingCardView.rank = playingCard.rank;
-    self.playingCardView.suit = playingCard.suit;
-  }
-}
-
-- (Deck *)createDeck
-{
-  NSLog(@"PlayingCardGameVC: createDeck");
-  return [[PlayingCardDeck alloc] init];
-}
-
-- (NSUInteger)numOfCardsToMatch {
-  NSLog(@"PlayingCardGameVC: set num of cards to match (2 for the playing card game)");
-  return 2;
-}
-
-- (IBAction)swipe:(UISwipeGestureRecognizer *)sender {
-  // TODO - here for dev phase - need to be moved to parent class
-  
-  if (!self.playingCardView.faceUp) {
-    [self drawRandomPlayingCard];
-  }
-  self.playingCardView.faceUp = !self.playingCardView.faceUp;
-}
-
 
 - (void)viewDidLoad
 {
-  [super viewDidLoad];
-  
   NSLog(@"PlayingCardGameVC: viewDidLoad");
   
-  // TODO - here for dev phase - need to be moved to parent class
-
-  self.playingCardView.suit = @"♥"; // temp code to test
-  self.playingCardView.rank = 9;  // temp code to test
-  
-  [self.playingCardView addGestureRecognizer:[[UIPinchGestureRecognizer alloc] initWithTarget:self.playingCardView action:@selector(pinch:)]];
+  [super viewDidLoad];
 }
 
 - (void)didReceiveMemoryWarning
@@ -89,5 +48,43 @@
     // Pass the selected object to the new view controller.
 }
 */
+
+#pragma mark - Virtual Methods Implementation
+
+#define DEFAULT_NUM_OF_CARDS_IN_PLAYING_CARD_GAME 12
+#define NUMBER_OF_CARDS_TO_MATCH_IN_PLAYING_CARD_GAME 2
+
+- (Deck *)createDeck
+{
+  NSLog(@"PlayingCardGameVC: createDeck");
+  return [[PlayingCardDeck alloc] init];
+}
+
+- (NSUInteger)numOfCardsToMatch {
+  NSLog(@"PlayingCardGameVC: set num of cards to match (2 for the playing card game)");
+  return NUMBER_OF_CARDS_TO_MATCH_IN_PLAYING_CARD_GAME;
+}
+
+- (NSUInteger)defaultNumOfCardsInGame {
+  NSLog(@"PlayingCardGameVC: defaultNumOfCardsInGame");
+  return DEFAULT_NUM_OF_CARDS_IN_PLAYING_CARD_GAME;
+}
+
+
+- (CardView *)createCardViewWithCard:(Card *)card
+{
+  PlayingCardView *playingCardView = nil;
+  
+  if ([card isKindOfClass:[PlayingCard class]]) {
+    PlayingCard *playingCard = (PlayingCard *)card;
+    playingCardView = [[PlayingCardView alloc] initWithCard:playingCard];
+  } else {
+    // TODO - exception
+    NSLog(@"PlayingCardGameVC: createCardViewWithCard - incompatible parameter type");
+  }
+
+  return playingCardView;
+}
+
 
 @end

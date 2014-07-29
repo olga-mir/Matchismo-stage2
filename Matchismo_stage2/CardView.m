@@ -10,6 +10,12 @@
 
 @implementation CardView
 
+- (void) setFaceUp:(BOOL)faceUp
+{
+  _faceUp = faceUp;
+  [self setNeedsDisplay];
+}
+
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
@@ -17,6 +23,13 @@
         // Initialization code
     }
     return self;
+}
+
+- (CardView *)createCardViewWithCard:(Card *)card // TODO - maybe should be instancetype?
+{
+  // TODO -  exception.
+  NSLog(@"CardView: createCardViewWithCard - abstract method. Need to be implemented in subclass");
+  return nil;
 }
 
 /*

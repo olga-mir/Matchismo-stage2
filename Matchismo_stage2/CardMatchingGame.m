@@ -20,6 +20,9 @@
 // Cards that are currently dealt
 @property (nonatomic, strong) NSMutableArray *cards; // of Cards
 
+// Deck of cards for current game. As the game goes, cards are being drawn from it.
+@property (strong, nonatomic)Deck *deck;
+
 @end
 
 
@@ -31,13 +34,19 @@
   return _cards;
 }
 
+- (Deck *)deck
+{
+  if(!_deck) _deck = [[Deck alloc] init];  // this 'if' will never be true in this game implementation
+  return _deck;
+}
+
 
 // auxilary function used to fill the _cards array from the given deck
 // used in initializer and re-deal operation.
-- (BOOL)dealCards:(NSUInteger)count fromDeck:(Deck *)deck
+- (BOOL)dealCards:(NSUInteger)count
 {
   for (int i = 0; i < count ; i++) {
-    Card *card = [deck drawRandomCard];
+    Card *card = [self.deck drawRandomCard];
     if (card) {
       [self.cards addObject:card];
     } else { // there was not enough cards in the deck
@@ -47,7 +56,9 @@
   return YES; // successfully dealt the cards
 }
 
-// The class designated inittializer
+// The class designated inittializer.
+// The object recieves its deck from outside, so it can remain general Game Matching logic
+// and not depend on the type of cards in the deck
 - (instancetype)initWithCardCount:(NSUInteger)count usingDeck:(Deck *)deck cardsInSet:(NSUInteger)numOfCardsToMatch
 {
   NSLog(@"CardMatchingGame.m: initWithCardCount %d", count);
@@ -55,31 +66,62 @@
   self = [super init];
   
   if (self) {
-    if (![self dealCards:count fromDeck:deck]) {
+    self.deck = deck;
+    if (![self dealCards:count]) {
       // there was not enough cards, so the deal failed
       self = nil;
     } else {
       self.numOfCardsToMatch = numOfCardsToMatch;
     }
   }
+  NSLog(@"CardMatchingGame.m: initWithCardCount completed");
   return self;
 }
 
 // reset the game logic. The number of cards is defined only once in the beggining of the game
 // i.e. it is set once in the CardMatchingGame initializer
--(void)restartGameUsingDeck:(Deck *)deck
+- (void)restartGame
 {
   int cardsInGame = [self.cards count];
   [self.cards removeAllObjects];
-  [self dealCards:cardsInGame fromDeck:deck];
+  [self dealCards:cardsInGame];
   self.score = 0;
 }
 
-
+// Getter for a card at specified index
 - (Card *)cardAtIndex:(NSUInteger)index
 {
   return (index < [self.cards count]) ? self.cards[index] : nil;
 }
+
+// return number of cards that are currently in the game (dealt from the deck and not taken away by matches)
+- (NSUInteger)curNumberOfCardsInGame
+{
+  return [self.cards count];
+}
+
+// add requested number of cards from the deck to the game
+// return False if there were not enough cards in the deck.
+- (BOOL)addCardsToPlay:(NSUInteger)numOfCardsToAdd
+{
+  NSLog(@"Adding cards to game");
+  Card *card = [self.deck drawRandomCard];
+  NSUInteger cardsAdded = 0;
+  
+  while (card && (cardsAdded < numOfCardsToAdd)) {
+    [self.cards addObject:card];
+    cardsAdded++;
+    NSLog(@"Added a card");
+  }
+  
+  // if the loop ended because there were not enough card to deal, then return False to the caller
+  if (cardsAdded < numOfCardsToAdd) {
+    return NO;
+  }
+  return YES;
+}
+
+# pragma mark - Matching Logic
 
 static const int MISMATCH_PENALTY = 2;
 static const int MATCH_BONUS = 4;

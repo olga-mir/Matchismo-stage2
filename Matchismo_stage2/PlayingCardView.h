@@ -9,15 +9,10 @@
 #import <UIKit/UIKit.h>
 #import "CardView.h"
 
+@class Card;
+
 @interface PlayingCardView : CardView
 
-// TODO - these properties should come from Card model.
-@property (nonatomic) NSUInteger rank;
-@property (strong, nonatomic) NSString *suit;
-
-// TODO - move these to CardView
-@property (nonatomic) BOOL faceUp;
-
-- (void) pinch:(UIPinchGestureRecognizer *)gesture;
+- (instancetype)initWithCard:(Card *)card;
 
 @end

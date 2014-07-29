@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		773417901985EF6000B9C1F4 /* Grid.m in Sources */ = {isa = PBXBuildFile; fileRef = 7734178F1985EF6000B9C1F4 /* Grid.m */; };
 		77349CF41980CA6200B9C1F4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77349CF31980CA6200B9C1F4 /* Foundation.framework */; };
 		77349CF61980CA6200B9C1F4 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77349CF51980CA6200B9C1F4 /* CoreGraphics.framework */; };
 		77349CF81980CA6200B9C1F4 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77349CF71980CA6200B9C1F4 /* UIKit.framework */; };
@@ -45,6 +46,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7734178E1985EF6000B9C1F4 /* Grid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Grid.h; sourceTree = "<group>"; };
+		7734178F1985EF6000B9C1F4 /* Grid.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Grid.m; sourceTree = "<group>"; };
 		77349CF01980CA6200B9C1F4 /* Matchismo_stage2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Matchismo_stage2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77349CF31980CA6200B9C1F4 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		77349CF51980CA6200B9C1F4 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -112,6 +115,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7734178D1985EF6000B9C1F4 /* Grid */ = {
+			isa = PBXGroup;
+			children = (
+				7734178E1985EF6000B9C1F4 /* Grid.h */,
+				7734178F1985EF6000B9C1F4 /* Grid.m */,
+			);
+			path = Grid;
+			sourceTree = "<group>";
+		};
 		77349CE71980CA6200B9C1F4 = {
 			isa = PBXGroup;
 			children = (
@@ -189,6 +201,7 @@
 		77349D281980CACA00B9C1F4 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				7734178D1985EF6000B9C1F4 /* Grid */,
 				77349D501980D4FD00B9C1F4 /* SetCardView */,
 				77349D4F1980D4F300B9C1F4 /* PlayingCardView */,
 				77349D541983140100B9C1F4 /* CardView.h */,
@@ -379,6 +392,7 @@
 				77349D451980CE6400B9C1F4 /* SetCard.m in Sources */,
 				77349D301980CBBF00B9C1F4 /* SetGameVC.m in Sources */,
 				77349D001980CA6200B9C1F4 /* main.m in Sources */,
+				773417901985EF6000B9C1F4 /* Grid.m in Sources */,
 				77349D391980CE1900B9C1F4 /* Card.m in Sources */,
 				77349D2D1980CB1D00B9C1F4 /* PlayingCardGameVC.m in Sources */,
 				77349D4E1980D32000B9C1F4 /* CardGameViewController.m in Sources */,
@@ -510,6 +524,15 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Matchismo_stage2/Matchismo_stage2-Prefix.pch";
 				INFOPLIST_FILE = "Matchismo_stage2/Matchismo_stage2-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/olga/Desktop/MOOC/2014.01_Android/adt-bundle-mac-x86_64-20131030/sdk/build-tools/android-4.4",
+					"/Users/olga/Desktop/MOOC/2014.01_Android/adt-bundle-mac-x86_64-20131030/sdk/build-tools/android-4.4/renderscript/lib/intermediates/armeabi-v7a",
+					"/Users/olga/Desktop/MOOC/2014.01_Android/adt-bundle-mac-x86_64-20131030/sdk/build-tools/android-4.4/renderscript/lib/intermediates/mips",
+					"/Users/olga/Desktop/MOOC/2014.01_Android/adt-bundle-mac-x86_64-20131030/sdk/build-tools/android-4.4/renderscript/lib/intermediates/x86",
+					"/Users/olga/Desktop/MOOC/2014.01_Android/adt-bundle-mac-x86_64-20131030/sdk/tools/Jet/JetCreator",
+					"/Users/olga/Desktop/MOOC/2014.01_Android/adt-bundle-mac-x86_64-20131030/sdk/tools/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -523,6 +546,15 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Matchismo_stage2/Matchismo_stage2-Prefix.pch";
 				INFOPLIST_FILE = "Matchismo_stage2/Matchismo_stage2-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/olga/Desktop/MOOC/2014.01_Android/adt-bundle-mac-x86_64-20131030/sdk/build-tools/android-4.4",
+					"/Users/olga/Desktop/MOOC/2014.01_Android/adt-bundle-mac-x86_64-20131030/sdk/build-tools/android-4.4/renderscript/lib/intermediates/armeabi-v7a",
+					"/Users/olga/Desktop/MOOC/2014.01_Android/adt-bundle-mac-x86_64-20131030/sdk/build-tools/android-4.4/renderscript/lib/intermediates/mips",
+					"/Users/olga/Desktop/MOOC/2014.01_Android/adt-bundle-mac-x86_64-20131030/sdk/build-tools/android-4.4/renderscript/lib/intermediates/x86",
+					"/Users/olga/Desktop/MOOC/2014.01_Android/adt-bundle-mac-x86_64-20131030/sdk/tools/Jet/JetCreator",
+					"/Users/olga/Desktop/MOOC/2014.01_Android/adt-bundle-mac-x86_64-20131030/sdk/tools/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};

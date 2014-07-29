@@ -7,9 +7,15 @@
 //
 
 #import "PlayingCardView.h"
+#import "PlayingCard.h"
 
 @interface PlayingCardView()
+
 @property (nonatomic) CGFloat faceCardScaleFactor;
+
+@property (strong, nonatomic) NSString *suit;
+@property (nonatomic) NSUInteger rank;
+
 @end
 
 @implementation PlayingCardView
@@ -41,12 +47,6 @@
 - (void) setSuit:(NSString *)suit
 {
   _suit = suit;
-  [self setNeedsDisplay];
-}
-
-- (void) setFaceUp:(BOOL)faceUp
-{
-  _faceUp = faceUp;
   [self setNeedsDisplay];
 }
 
@@ -226,6 +226,31 @@
   self.contentMode = UIViewContentModeRedraw;
 }
 
+static const CGSize CARD_SIZE = {60, 180};
+- (instancetype)initWithCard:(Card *)card
+{
+  NSLog(@"PlayingCardView: initWithCard");
+  
+  CGRect frame;
+  frame.origin = CGPointZero;
+  frame.size = CARD_SIZE;
+  
+  //self = [[PlayingCardView alloc] initWithFrame:frame];
+
+  if ([card isKindOfClass:[PlayingCard class]]) {
+    PlayingCard *playingCard = (PlayingCard *)card;
+    self.rank = playingCard.rank;
+    self.suit = playingCard.suit;
+  } else {
+    NSLog(@"PlayingCardView: initWithCard - the 'card' parameter is of incompatible type"); // TODO - exception
+  }
+  
+  return self;
+}
+
+
+
+/*
 - (void)awakeFromNib
 {
   [self setup];
@@ -239,5 +264,7 @@
   }
   return self;
 }
+*/
+
 
 @end

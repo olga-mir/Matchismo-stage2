@@ -8,10 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
+@class Card;
+
 @interface CardView : UIView
 
-//@property (nonatomic) BOOL faceUp;
+@property (nonatomic) BOOL faceUp;
 
-//- (void) pinch:(UIPinchGestureRecognizer *)gesture;
+- (CardView *)createCardViewWithCard:(Card *)card; // virtual method
 
 @end

@@ -10,10 +10,15 @@
 #import "Deck.h"
 
 @class CardMatchingGame;
+@class CardView;
+@class Card;
+
 
 @interface CardGameViewController : UIViewController
 
--(Deck *)createDeck; // virtual method
--(NSUInteger)numOfCardsToMatch; // virtual method
+- (Deck *)createDeck; // virtual method
+- (NSUInteger)numOfCardsToMatch; // virtual method
+- (NSUInteger)defaultNumOfCardsInGame; // virtual method
+- (CardView *)createCardViewWithCard:(Card *)card; // virtual method
 
 @end

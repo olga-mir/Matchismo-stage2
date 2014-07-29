@@ -11,15 +11,25 @@
 
 @interface CardMatchingGame : NSObject
 
+@property (nonatomic, readonly) NSInteger score;
+
+
 // designated initializer
 - (instancetype)initWithCardCount:(NSUInteger)count usingDeck:(Deck *)deck cardsInSet:(NSUInteger)numOfCardsToMatch;
 
 // purge the current cards and deal new set
-- (void)restartGameUsingDeck:(Deck *)deck;
+- (void)restartGame;
 
 - (void)choseCardAtIndex:(NSUInteger)index;
 - (Card *)cardAtIndex:(NSUInteger)index;
 
-@property (nonatomic, readonly) NSInteger score;
+// return number of cards that are currently in the game (dealt from the deck and not taken away by matches)
+- (NSUInteger)curNumberOfCardsInGame;
+
+// add requested number of cards from the deck to the game
+// return False if there were not enough cards in the deck.
+- (BOOL)addCardsToPlay:(NSUInteger)cardsToAdd;
+
+
 
 @end
