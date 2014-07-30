@@ -30,19 +30,17 @@
   
   if (self) {
     SYSASSERT([playingCard isKindOfClass:[PlayingCard class]], @"Type mismatch: Playing card view cannot be created without valid card of PlayingCard type");
+    [self setup];
     self.rank = playingCard.rank;
     self.suit = playingCard.suit;
   }
   return self;
 }
 
-- (void)setup
+- (void)awakeFromNib
 {
-  self.backgroundColor = nil; // can be also [UIColor clearColor] - it is only a style thing
-  self.opaque = NO;
-  self.contentMode = UIViewContentModeRedraw;
+  [self setup];
 }
-
 
 
 #pragma mark - Properties
@@ -98,24 +96,30 @@
   return @[@"?", @"A", @"2", @"3", @"4", @"5", @"6", @"7", @"8", @"9", @"10", @"J", @"Q", @"K"][self.rank];
 }
 
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
+
+- (void)setup
+{
+  self.backgroundColor = nil; // can be also [UIColor clearColor] - it is only a style thing
+  self.opaque = NO;
+  self.contentMode = UIViewContentModeRedraw;
+}
+
 - (void)drawRect:(CGRect)rect
 {
-  NSLog(@"PlayingCardView: drawRect");
+  NSLog(@"PlayingCardView: drawRect. %d%@", self.rank, self.suit);
+  
   // create the genral form of the card: white rounded corners with black stroke
   UIBezierPath *roundedRect = [UIBezierPath bezierPathWithRoundedRect:self.bounds cornerRadius:[self cornerRadius]];
   [roundedRect addClip];
   [[UIColor whiteColor] setFill];
-  UIRectFill(self.bounds); // TODO - is it the same as [roundedRect fill];?
+  //UIRectFill(self.bounds); // TODO - is it the same as
+  [roundedRect fill];
   [[UIColor blackColor] setStroke];
   [roundedRect stroke];
   
   if (self.faceUp) {
-    NSLog(@"faceUp");
     UIImage *faceImage = [UIImage imageNamed:[NSString stringWithFormat:@"%@%@", [self rankAsString], self.suit]];
     if (faceImage) {
-      NSLog(@"faceImage");
       CGRect imageRect = CGRectInset(self.bounds,
                                      self.bounds.size.width * (1.0 - self.faceCardScaleFactor),
                                      self.bounds.size.height * (1.0 - self.faceCardScaleFactor));
@@ -245,12 +249,6 @@
 
 
 
-/*
-- (void)awakeFromNib
-{
-  [self setup];
-}
-*/
 
 
 @end

@@ -16,6 +16,6 @@
 
 @property (nonatomic) NSUInteger aspectRatio;
 
-- (instancetype)initWithFrame:(CGRect)frame Card:(Card *)setCard; // virtual method
+- (instancetype)initWithFrame:(CGRect)frame Card:(Card *)card; // virtual method
 
 @end

@@ -21,6 +21,8 @@
 - (Deck *)createDeck;
 - (NSUInteger)numOfCardsToMatch;
 - (NSUInteger)defaultNumOfCardsInGame;
+- (CGFloat)getCardAspectRatio;
 - (CardView *)createCardViewWithFrame:(CGRect)frame withCard:(Card *)card;
+
 
 @end

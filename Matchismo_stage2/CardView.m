@@ -18,7 +18,7 @@
   [self setNeedsDisplay];
 }
 
-- (instancetype)initWithFrame:(CGRect)frame Card:(Card *)setCard
+- (instancetype)initWithFrame:(CGRect)frame Card:(Card *)card
 {
   mustOverride();
 }

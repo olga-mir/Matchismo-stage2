@@ -86,5 +86,13 @@
   return playingCardView;
 }
 
+// default aspect ratio of the playing card ("Poker" type) - 56/88
+#define DEFAULT_PLAYING_CARD_ASPECT_RATIO 0.625
+
+- (CGFloat)getCardAspectRatio
+{
+  return DEFAULT_PLAYING_CARD_ASPECT_RATIO;
+}
+
 
 @end

@@ -75,5 +75,12 @@
   return setCardView;
 }
 
+// Set card is usually more square than the playing card
+#define DEFAULT_SET_CARD_ASPECT_RATIO  0.55
+
+- (CGFloat)getCardAspectRatio
+{
+  return DEFAULT_SET_CARD_ASPECT_RATIO;
+}
 
 @end
