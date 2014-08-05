@@ -65,8 +65,13 @@
   return _grid;
 }
 
-# pragma mark - Lifecycle
 
+// The card views will not handle user's gestures.
+// The gestures will be handled by the game controller since only the view controller
+// has the connection between the cards in the game which is held by model and every individual card view
+// Other options could be storing the card index at the view, which is bad because it mixes the view with model
+// or the view could notify the VC of its value. But that will make it impossible to use
+// for a game with two identical decks or for a deck with two or more sets of identical cards in it
 - (void)tap:(UITapGestureRecognizer *)tapGesture
 {
   NSLog(@"Tap gesture recognizer in main VC");
@@ -80,7 +85,7 @@
   CardView *cardView = [self.cardViews objectAtIndex:chosenCardIndex];
   cardView.faceUp = !cardView.faceUp;
   
-  NSLog(@"Chose card at index: %d", chosenCardIndex);
+  NSLog(@"Chose card at index: %d, card by the VC: %@", chosenCardIndex, cardView);
   [self.game choseCardAtIndex:chosenCardIndex];
   
   [self updateUI];
@@ -111,6 +116,7 @@
   self.scoreLabel.text = [NSString stringWithFormat:@"Score: %d", self.game.score];
 }
 
+#define CARD_VIEW_SCALE_FACTOR 0.97
 
 - (void)viewDidLoad
 {
@@ -118,7 +124,12 @@
   
   [super viewDidLoad];
   
-  [self.cardsDisplayArea setBackgroundColor:[UIColor clearColor]];
+  [self.cardsDisplayArea setBackgroundColor:[UIColor clearColor]]; // the view has alpha 1 and clearColor, so that the subviews will be visible
+  
+  // The card views will not handle user's gestures.
+  // The gestures will be handled by the game controller since only the view controller
+  // has the connection between the cards in the game which is held by model and every individual card view
+  // see the tap gesture handler in this VC for more explanation about this implementation decision
   [self.cardsDisplayArea addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)]];
   
   // Update the grid
@@ -136,13 +147,21 @@
     NSUInteger r = cardInd / self.grid.columnCount;
     NSUInteger c = cardInd % self.grid.columnCount;
     
-    CGRect frame = [self.grid frameOfCellAtRow:r inColumn:c];
+    CGRect gridCell = [self.grid frameOfCellAtRow:r inColumn:c];
+    
+    // frames provided by grid take all the available space, so the frame for the card view
+    // should be scalled a little in order to provide some spacing between them
+    CGRect frame;
+    frame.size.width  = gridCell.size.width * CARD_VIEW_SCALE_FACTOR;
+    frame.size.height = gridCell.size.height * CARD_VIEW_SCALE_FACTOR;
+    
+    // Also the frame must be positioned in the center of the grid cell
+    frame.origin.x = gridCell.origin.x + (gridCell.size.height - frame.size.height) / 2;
+    frame.origin.y = gridCell.origin.y + (gridCell.size.width - frame.size.width) / 2;
           
     Card *card = [self.game cardAtIndex:cardInd];
     CardView *cardView = [self createCardViewWithFrame:frame withCard:card];
     [self.cardViews addObject:cardView];
-          
-//    [cardView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:cardView action:@selector(tap:)]];
 
     [self.cardsDisplayArea addSubview:cardView];
   }

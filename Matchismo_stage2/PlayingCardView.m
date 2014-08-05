@@ -248,7 +248,10 @@
 }
 
 
-
+- (NSString *)description
+{
+   return [NSString stringWithFormat:@"CardView contents: %@%@", [self rankAsString], self.suit];
+}
 
 
 @end

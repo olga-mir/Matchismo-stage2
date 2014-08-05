@@ -133,6 +133,8 @@ static const int COST_TO_CHOSE = 1;
   Card *card = [self cardAtIndex:index];
   int scoreForCurrentMatch = 0;
   
+  NSLog(@"Game model: chose card: %@", card);
+  
   if (card.isChosen) {
     // if the card was already chosen, then toggle it back to unchosen state.
     // if the user clicked on a card that was previously chosen (face up), this
@@ -180,6 +182,5 @@ static const int COST_TO_CHOSE = 1;
     
   }
 }
-
 @end
 
