@@ -106,7 +106,7 @@
 
 - (void)drawRect:(CGRect)rect
 {
-  NSLog(@"PlayingCardView: drawRect. %d%@", self.rank, self.suit);
+//  NSLog(@"PlayingCardView: drawRect. %d%@", self.rank, self.suit);
   
   // create the genral form of the card: white rounded corners with black stroke
   UIBezierPath *roundedRect = [UIBezierPath bezierPathWithRoundedRect:self.bounds cornerRadius:[self cornerRadius]];

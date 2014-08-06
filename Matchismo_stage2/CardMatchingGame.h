@@ -6,8 +6,9 @@
 //  Copyright (c) 2014 Olga. All rights reserved.
 //
 #import <Foundation/Foundation.h>
-#import "Deck.h"
-#import "Card.h"
+
+@class Card;
+@class Deck;
 
 @interface CardMatchingGame : NSObject
 

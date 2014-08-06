@@ -23,16 +23,21 @@
 @property (weak, nonatomic) IBOutlet UIView *cardsDisplayArea;
 @property (strong, nonatomic) NSMutableArray *cardViews; // of CardView's
 
-@property (weak, nonatomic) IBOutlet UILabel *scoreLabel;
+@property (weak, nonatomic) IBOutlet UILabel *scoreLabel; // TODO - not yet implemented
 @property (weak, nonatomic) IBOutlet UIButton *dealButton;
-
 
 @end
 
 
+// TODO - not yet implemented - when gameInProgress - use KVO. don't try to do graphics when cards are all gone
+// TODO - game over. all matched or remaining cards could not be matched
+// TODO - disable user interaction while animating
+// TODO - disable portrait upsidedown
+
 @implementation CardGameViewController
 
 #pragma mark - Properties
+
 - (CardMatchingGame *)game
 {
   if(!_game) _game = [[CardMatchingGame alloc] initWithCardCount:[self defaultNumOfCardsInGame]
@@ -40,8 +45,8 @@
                                                       cardsInSet:[self numOfCardsToMatch]];
   
   // The game might still be nil if there were not enough cards in the deck.
-  // It wouldn't happen in this implementation, because the number of cards for initial game view
-  // is much smaller than the cards in the deck.
+  // It wouldn't happen in this implementation, because the number of cards
+  // in the beginning of the game is much smaller than the cards in the deck.
   return _game;
 }
 
@@ -72,6 +77,7 @@
 // Other options could be storing the card index at the view, which is bad because it mixes the view with model
 // or the view could notify the VC of its value. But that will make it impossible to use
 // for a game with two identical decks or for a deck with two or more sets of identical cards in it
+// TODO - see if view.tag can help
 - (void)tap:(UITapGestureRecognizer *)tapGesture
 {
   NSLog(@"Tap gesture recognizer in main VC");
@@ -80,40 +86,143 @@
   
   NSUInteger row = tapLocation.y / self.grid.cellSize.height;
   NSUInteger col = tapLocation.x / self.grid.cellSize.width;
-  NSUInteger chosenCardIndex = row * self.grid.columnCount + col;
+  NSUInteger visibleCardIndex = row * self.grid.columnCount + col;
+  
+  // visibleCardIndex is the index of the card view which received this gesture. It is index in
+  // the GRID. But cards in game model and in VC array of views are not removed after the match, they are simply hidden
+  // So the index in the grid must be offset by the number of hidden card views, before this particular index,
+  // to represent the actual card index held by the game logic
+  NSUInteger chosenCardIndex = visibleCardIndex; // it is at least a visibleCardIndex
+  NSUInteger visibleCards = 0;
+  
+  for (int i = 0; i <= [self.cardViews count]; i++) {
+    if (![self.cardViews[i] isHidden]) {
+      visibleCards++;
+    }
+    
+    if (visibleCards == visibleCardIndex + 1) {
+      chosenCardIndex = i;
+      break;
+    }
+  }
+  NSLog(@"index translation: visibleCardIndex = %d, chosenCardIndex = %d", visibleCardIndex, chosenCardIndex);
   
   CardView *cardView = [self.cardViews objectAtIndex:chosenCardIndex];
-  cardView.faceUp = !cardView.faceUp;
-  
-  NSLog(@"Chose card at index: %d, card by the VC: %@", chosenCardIndex, cardView);
-  [self.game choseCardAtIndex:chosenCardIndex];
-  
-  [self updateUI];
+
+  [UIView transitionWithView:cardView
+                    duration:0.7
+                      options:UIViewAnimationOptionTransitionFlipFromLeft
+                  animations:^{
+                      cardView.faceUp = !cardView.faceUp;
+                    }
+                  completion:^(BOOL finished){
+                      [self.game choseCardAtIndex:chosenCardIndex];
+                      [self animateMatchOutcome];
+                    }];
+
 }
 
-- (void) updateUI
+// Called after the current tap was processed
+// The current state can be one of:
+// 1. the match is not yet completed (in 2-card-matching only one card is currently selected)
+//    In this case no changes will be detected in this function and there will be no animations
+// 2. the match was completed and resolved -
+//    a) the cards didn't match => the isChosen state has changed and the card must be flipped over, to face down state
+//    b) the cards match => the both cards should dissaper and the rest of the cards moved to utilize the space efficiently
+- (void)animateMatchOutcome
 {
-/*  for (UIButton *cardButton in self.cardButtons) {
-   int cardButtonIndex = [self.cardButtons indexOfObject:cardButton];
-   Card *card = [self.game cardAtIndex:cardButtonIndex];
-   [cardButton setTitle:[self titleForCard:card] forState:UIControlStateNormal];
-   [cardButton setBackgroundImage:[self backgroundImageForCard:card] forState:UIControlStateNormal];
-   cardButton.enabled = !card.isMatched;
-  }*/
-  
-  NSLog(@"updateUI. cardViews count is %d", [self.cardViews count]);
-  SYSASSERT(([self.cardViews count] == self.game.curNumberOfCardsInGame), @"Params inconsistency");
   for (int i = 0; i < [self.cardViews count]; i++) {
     
     // get a card from the model and its corresponding view
     Card *card = [self.game cardAtIndex:i];
     CardView *cardView = self.cardViews[i];
     
-    // Matched cards are not shown
-    cardView.hidden = card.isMatched;
-    cardView.faceUp = card.isChosen;
+    // Check if a card state has changed, if yes the change must be animated
+    if (card.isMatched != cardView.hidden) { // if card is matched in the the current match
+      [UIView transitionWithView:cardView
+                        duration:0.5
+                         options:UIViewAnimationOptionTransitionCrossDissolve
+                      animations:^{
+                        cardView.hidden = card.isMatched;
+                      }
+                      completion:^(BOOL finished) {
+                        if (cardView.hidden) { // if a card has been taken away - the grid might change
+                          [self rePositionCards];
+                        }
+                      }];
+    }
+    if (card.isChosen != cardView.faceUp) {
+      [UIView transitionWithView:cardView
+                        duration:0.5
+                         options:UIViewAnimationOptionTransitionFlipFromRight
+                      animations:^{
+                        cardView.faceUp = card.isChosen;
+                      }
+                      completion:nil]; // there are no changes in the grid when the card is flipped over
+    }
   }
-  self.scoreLabel.text = [NSString stringWithFormat:@"Score: %d", self.game.score];
+}
+
+- (void)rePositionCards
+{
+  // re-arrange cards to take all the available screen space
+  [self gridSetup];
+  
+  NSUInteger currVisibleInd = 0;
+  
+  for (NSUInteger currInd = 0; currInd < [self.cardViews count]; currInd++) {
+    
+    CardView *cardView = self.cardViews[currInd];
+    
+    if (!cardView.isHidden) {
+      
+      CGRect frame = [self setupFrameAtIndex:currVisibleInd];
+      
+      currVisibleInd++;
+      
+      // Animate changes in the frame (it there were any)
+      if ([self isDifferentFrame:frame anotherFrame:cardView.frame]) {
+        
+        [UIView transitionWithView:cardView
+                          duration:0.6
+                           options:UIViewAnimationOptionTransitionNone
+                        animations:^{
+                          cardView.frame = frame;
+                        }
+                        completion:nil];
+      }
+    }
+  }
+}
+
+// TODO - research how to compare frames, or work with floats make params pass by const reference.
+- (BOOL)isDifferentFrame:(CGRect)frame anotherFrame:(CGRect)anotherFrame
+{
+  BOOL differentFrame = NO;
+  
+  // the frame of a card can change as a result of the current match in two cases:
+  // 1. the rest of the cards have to move to cover the spaces. The frame will have different origin.
+  // 2. the last row had been cleared out, and there is more space for each of the rest of the cards. The frame will be bigger.
+  
+  // case 1. NB: it will be sufficient in this implementation to test only the x component
+  if ((abs(frame.origin.x - anotherFrame.origin.x) > 0.00001) ||
+      (abs(frame.origin.y - anotherFrame.origin.y) > 0.00001)) {
+    differentFrame = YES;
+  
+  // case 2. Since cards are proportional in the game it is sufficient to check one (any) dimension
+  } else if (abs(frame.size.height - anotherFrame.size.height) > 0.00001) {
+    differentFrame = YES;
+  }
+  return differentFrame;
+}
+
+- (void)gridSetup
+{
+  self.grid.size = self.cardsDisplayArea.frame.size; // it could change due to rotate
+  self.grid.minimumNumberOfCells = [self.game curNumberOfCardsInGame];
+  NSLog(@"%@", self.grid);
+  
+  SYSASSERT(self.grid.inputsAreValid, @"Can't layout the views because grid inputs are invalid"); // TODO - temp. do something sensible later
 }
 
 #define CARD_VIEW_SCALE_FACTOR 0.97
@@ -132,65 +241,70 @@
   // see the tap gesture handler in this VC for more explanation about this implementation decision
   [self.cardsDisplayArea addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)]];
   
-  // Update the grid
-  self.grid.size = self.cardsDisplayArea.frame.size; // it could change due to rotate
-  self.grid.minimumNumberOfCells = self.game.curNumberOfCardsInGame;
-  NSLog(@"CardGameVC: self.game.curNumberOfCardsInGame: %d", self.game.curNumberOfCardsInGame);
-  NSLog(@"%@", self.grid);
-  
-  SYSASSERT(self.grid.inputsAreValid, @"Can't layout the views because grid inputs are invalid"); // TODO - temp. do something sensible later
-  
-  // populate the grid with the card views
-  
-  for (int cardInd = 0; cardInd < self.game.curNumberOfCardsInGame; cardInd++) {
-      
-    NSUInteger r = cardInd / self.grid.columnCount;
-    NSUInteger c = cardInd % self.grid.columnCount;
-    
-    CGRect gridCell = [self.grid frameOfCellAtRow:r inColumn:c];
-    
-    // frames provided by grid take all the available space, so the frame for the card view
-    // should be scalled a little in order to provide some spacing between them
-    CGRect frame;
-    frame.size.width  = gridCell.size.width * CARD_VIEW_SCALE_FACTOR;
-    frame.size.height = gridCell.size.height * CARD_VIEW_SCALE_FACTOR;
-    
-    // Also the frame must be positioned in the center of the grid cell
-    frame.origin.x = gridCell.origin.x + (gridCell.size.height - frame.size.height) / 2;
-    frame.origin.y = gridCell.origin.y + (gridCell.size.width - frame.size.width) / 2;
-          
-    Card *card = [self.game cardAtIndex:cardInd];
-    CardView *cardView = [self createCardViewWithFrame:frame withCard:card];
-    [self.cardViews addObject:cardView];
+  [self createCardViews];
+}
 
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+  [self gridSetup];
+  [self rePositionCards];
+}
+
+- (void)createCardViews
+{
+  // first of all - set up the grid. The grid will affect the cards size.
+  [self gridSetup];
+
+  for (int cardInd = 0; cardInd < self.game.curNumberOfCardsInGame; cardInd++) {
+    
+    CGRect frame = [self setupFrameAtIndex:cardInd];
+    
+    Card *card = [self.game cardAtIndex:cardInd];
+    SYSASSERT((card), @"Card Should not be nil");
+    
+    CardView *cardView = [self createCardViewWithFrame:frame withCard:card];
+    SYSASSERT((cardView), @"CardView should not be nil");
+    
+    [self.cardViews addObject:cardView];
     [self.cardsDisplayArea addSubview:cardView];
   }
 }
 
-
+- (CGRect)setupFrameAtIndex:(int)cardInd // TODO - by reference?
+{
+  NSUInteger r = cardInd / self.grid.columnCount;
+  NSUInteger c = cardInd % self.grid.columnCount;
+  
+  CGRect gridCell = [self.grid frameOfCellAtRow:r inColumn:c];
+  
+  // frames provided by grid take all the available space, so the frame for the card view
+  // should be scalled a little in order to provide some spacing between them
+  CGRect frame;
+  frame.size.width  = gridCell.size.width * CARD_VIEW_SCALE_FACTOR;
+  frame.size.height = gridCell.size.height * CARD_VIEW_SCALE_FACTOR;
+  
+  // Also the frame must be positioned in the center of the grid cell
+  frame.origin.x = gridCell.origin.x + (gridCell.size.height - frame.size.height) / 2;
+  frame.origin.y = gridCell.origin.y + (gridCell.size.width - frame.size.width) / 2;
+  
+  return frame;
+}
 
 #pragma mark - User Interface
 
 // at this stage the deal button doesn't prompt the user if he really intends to drop current game
+// TODO - animate departure of old cards and arrival of new ones
 - (IBAction)touchDealButton:(id)sender
 {
   NSLog(@"DEAL - in the main VC");
+  
   [self.game restartGame];
-  [self updateUI];
+  
+  [self.cardViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+  [self.cardViews removeAllObjects];
+  [self createCardViews];
 }
-
-
-- (NSString *)titleForCard:(Card *)card
-{
-  // This is temporary stage function
-  return card.isChosen ? @"??" : @"";
-}
-
-- (UIImage *)backgroundImageForCard:(Card *)card
-{
-  return [UIImage imageNamed:card.isChosen ? @"cardfront" : @"cardback"];
-}
-
 
 
 #pragma mark - Virtual Methods

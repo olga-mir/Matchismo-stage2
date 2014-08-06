@@ -8,6 +8,8 @@
 
 
 #import "CardMatchingGame.h"
+#import "Card.h"
+#import "Deck.h"
 
 
 @interface CardMatchingGame()
@@ -27,6 +29,8 @@
 
 
 @implementation CardMatchingGame
+
+
 
 - (NSMutableArray *)cards
 {
@@ -97,7 +101,13 @@
 // return number of cards that are currently in the game (dealt from the deck and not taken away by matches)
 - (NSUInteger)curNumberOfCardsInGame
 {
-  return [self.cards count];
+  NSUInteger count = 0;
+  for (Card *card in self.cards) {
+    if (!card.isMatched) {
+      count++;
+    }
+  }
+  return count;
 }
 
 // add requested number of cards from the deck to the game
