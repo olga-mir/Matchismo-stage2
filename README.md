@@ -10,9 +10,8 @@ The app is polished on the best-effort basis. i.e. it is not fancy looking (at t
 
 NOTES:
 0. The app is in development. Some features are not yet implemented, some failures are known, but not yet fixed. For the list of todo items scroll down
-1. The grid class used to layout frames was provided by the course. I noticed that sometimes it doesn't use the screen space efficiently, e.g.
-when there are 4 cards they are layout as 3 cards on the first row and 1 on the second , instead of 2 and 2. As it is provided class, at this stage
-I don't have desire nor time to fix this functionality.
+1. The grid class used to layout frames was provided by the course. It is designed to use all the horizontal space, which is not always optimal 
+use of the screen. For example when 4 cards left they will sit in two rows - 3 in the first and one in the second. But better layout will be 2x2 centered in the middle
 
 
 TODO:
