@@ -10,6 +10,7 @@
 #import "PlayingCardDeck.h"
 #import "PlayingCardView.h"
 #import "PlayingCard.h"
+#import "Utils.h"
 
 @interface PlayingCardGameVC ()
 
@@ -18,25 +19,13 @@
 
 @implementation PlayingCardGameVC
 
-- (instancetype)init
-{
-  NSLog(@"PlayingCardGameVC: init");
-  self = [super init];
-  return self;
-}
-
 - (void)viewDidLoad
 {
-  NSLog(@"PlayingCardGameVC: viewDidLoad");
+  NSLog(@"\n\nPlayingCardGameVC: viewDidLoad");
   
   [super viewDidLoad];
 }
 
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
 
 /*
 #pragma mark - Navigation
@@ -79,20 +68,13 @@
     PlayingCard *playingCard = (PlayingCard *)card;
     playingCardView = [[PlayingCardView alloc] initWithFrame:frame withCard:playingCard];
   } else {
-    // TODO - exception
-    NSLog(@"PlayingCardGameVC: createCardViewWithCard - incompatible parameter type");
+    SYSASSERT(NO, @"PlayingCardGameVC: createCardViewWithCard - incompatible parameter type");
   }
 
   return playingCardView;
 }
 
-// default aspect ratio of the playing card ("Poker" type) - 56/88
-#define DEFAULT_PLAYING_CARD_ASPECT_RATIO 0.625
 
-- (CGFloat)getCardAspectRatio
-{
-  return DEFAULT_PLAYING_CARD_ASPECT_RATIO;
-}
 
 
 @end

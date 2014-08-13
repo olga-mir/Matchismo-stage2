@@ -15,6 +15,10 @@
 
 @interface PlayingCardView : CardView
 
+- (CGFloat)getCardAspectRatio;
+
 - (instancetype)initWithFrame:(CGRect)frame withCard:(PlayingCard *)card;
+
+- (CGFloat)cornerRadius;
 
 @end

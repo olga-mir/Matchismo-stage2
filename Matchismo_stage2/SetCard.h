@@ -11,6 +11,21 @@
 
 #import "Card.h"
 
+
 @interface SetCard : Card
+
+@property (strong, nonatomic)NSString *contents;
+
+@property (nonatomic) NSUInteger rank;            // 1, 2 or 3
+@property (strong, nonatomic) NSString *color;    // green, red or purple (not UIColor because it is Model)
+@property (strong, nonatomic) NSString *filling;  // solid, striped or unfilled
+@property (strong, nonatomic) NSString *shape;    // squiggles, diamonds or ovals
+
+
++ (NSUInteger)maxRank;
++ (NSArray *)validColors;
++ (NSArray *)validFillings;
++ (NSArray *)validShapes;
+
 
 @end

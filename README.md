@@ -12,6 +12,8 @@ NOTES:
 0. The app is in development. Some features are not yet implemented, some failures are known, but not yet fixed. For the list of todo items scroll down
 1. The grid class used to layout frames was provided by the course. It is designed to use all the horizontal space, which is not always optimal 
 use of the screen. For example when 4 cards left they will sit in two rows - 3 in the first and one in the second. But better layout will be 2x2 centered in the middle
+2. The base Card class in the model is abstract class though it shouldn't be. However in this particular assignment due to time constraints I deliberately leave it
+abstract
 
 
 TODO:

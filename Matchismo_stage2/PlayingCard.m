@@ -86,8 +86,8 @@
 
 
 - (NSString *)rankAsString
-{ // TODO  - add validation code
-  return @[@"?", @"A", @"2", @"3", @"4", @"5", @"6", @"7", @"8", @"9", @"10", @"J", @"Q", @"K"][self.rank];
+{
+  return [PlayingCard rankStrings][self.rank];
 }
 
 - (NSString *)description

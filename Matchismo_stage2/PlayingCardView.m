@@ -12,7 +12,6 @@
 
 @interface PlayingCardView()
 
-@property (nonatomic) CGFloat faceCardScaleFactor;
 
 @property (strong, nonatomic) NSString *suit;
 @property (nonatomic) NSUInteger rank;
@@ -84,38 +83,34 @@
 
 #pragma mark - Drawing
 
-#define CORNER_FONT_STANDART_HEIGHT 180.0
-#define CORNER_RADIUS 12.0
-
-- (CGFloat)cornerScaleFactor { return self.bounds.size.height / CORNER_FONT_STANDART_HEIGHT; }
-- (CGFloat)cornerRadius { return CORNER_RADIUS * [self cornerScaleFactor]; }
-- (CGFloat)cornerOffset { return [self cornerRadius] / 3.0; }
-
 - (NSString *)rankAsString
 { // TODO  - add validation code
   return @[@"?", @"A", @"2", @"3", @"4", @"5", @"6", @"7", @"8", @"9", @"10", @"J", @"Q", @"K"][self.rank];
 }
 
 
-- (void)setup
+// default aspect ratio of the playing card ("Poker" type) - 56/88
+#define CARD_ASPECT_RATIO 0.625
+
+- (CGFloat)getCardAspectRatio
 {
-  self.backgroundColor = nil; // can be also [UIColor clearColor] - it is only a style thing
-  self.opaque = NO;
-  self.contentMode = UIViewContentModeRedraw;
+  NSLog(@"PLAYING CARD getCardAspectRatio");
+  return CARD_ASPECT_RATIO;
 }
+
+
+#define CORNER_FONT_STANDART_HEIGHT 180.0
+#define CORNER_RADIUS 12.0
+
+- (CGFloat)cornerScaleFactor { return self.bounds.size.height / CORNER_FONT_STANDART_HEIGHT; }
+- (CGFloat)cornerOffset { return [self cornerRadius] / 3.0; }
+- (CGFloat)cornerRadius { return CORNER_RADIUS * [self cornerScaleFactor]; }
+
+
 
 - (void)drawRect:(CGRect)rect
 {
-//  NSLog(@"PlayingCardView: drawRect. %d%@", self.rank, self.suit);
-  
-  // create the genral form of the card: white rounded corners with black stroke
-  UIBezierPath *roundedRect = [UIBezierPath bezierPathWithRoundedRect:self.bounds cornerRadius:[self cornerRadius]];
-  [roundedRect addClip];
-  [[UIColor whiteColor] setFill];
-  //UIRectFill(self.bounds); // TODO - is it the same as
-  [roundedRect fill];
-  [[UIColor blackColor] setStroke];
-  [roundedRect stroke];
+  [super drawRect:rect];
   
   if (self.faceUp) {
     UIImage *faceImage = [UIImage imageNamed:[NSString stringWithFormat:@"%@%@", [self rankAsString], self.suit]];
@@ -157,7 +152,6 @@
   CGContextRotateCTM(context, M_PI);
 
   [cornerText drawInRect:textBounds];
-  
 }
 
 #pragma mark - Pips

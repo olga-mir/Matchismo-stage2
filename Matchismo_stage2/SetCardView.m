@@ -7,7 +7,18 @@
 //
 
 #import "SetCardView.h"
+#import "SetCard.h"
 #import "Utils.h"
+
+@interface SetCardView()
+
+@property (nonatomic) NSUInteger rank;            // 1, 2 or 3
+@property (strong, nonatomic) NSString *color;    // green, red or purple
+@property (strong, nonatomic) NSString *filling;  // solid, striped or unfilled
+@property (strong, nonatomic) NSString *shape;    // squiggles, diamonds or ovals
+
+
+@end
 
 @implementation SetCardView
 
@@ -20,17 +31,34 @@
   self = [super initWithFrame:frame];
   
   if (self) {
-
+    NSLog(@"initWithFrame, (Set) card = %@", setCard.contents);
   }
   return self;
 }
 
+- (void)awakeFromNib
+{
+  [self setup];
+}
 
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
+#define CORNER_RADIUS 12.0
+
+#define CARD_ASPECT_RATIO 0.75
+
+- (CGFloat)getCardAspectRatio
+{
+  NSLog(@"SET CARD getCardAspectRatio");
+  return CARD_ASPECT_RATIO;
+}
+
+
+- (CGFloat)cornerScaleFactor { return self.bounds.size.height / 180.0; }
+- (CGFloat)cornerRadius { return CORNER_RADIUS * [self cornerScaleFactor]; }
+
+
 - (void)drawRect:(CGRect)rect
 {
-
+  [super drawRect:rect];
 }
 
 

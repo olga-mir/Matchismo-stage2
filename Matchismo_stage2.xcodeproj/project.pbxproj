@@ -206,7 +206,6 @@
 		77349D281980CACA00B9C1F4 /* View */ = {
 			isa = PBXGroup;
 			children = (
-				7734178D1985EF6000B9C1F4 /* Grid */,
 				77349D501980D4FD00B9C1F4 /* SetCardView */,
 				77349D4F1980D4F300B9C1F4 /* PlayingCardView */,
 				77349D541983140100B9C1F4 /* CardView.h */,
@@ -230,6 +229,7 @@
 		77349D2A1980CAD600B9C1F4 /* ViewController */ = {
 			isa = PBXGroup;
 			children = (
+				7734178D1985EF6000B9C1F4 /* Grid */,
 				77349D4C1980D32000B9C1F4 /* CardGameViewController.h */,
 				77349D4D1980D32000B9C1F4 /* CardGameViewController.m */,
 				77349D2B1980CB1D00B9C1F4 /* PlayingCardGameVC.h */,

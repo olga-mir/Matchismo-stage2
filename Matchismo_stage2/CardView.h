@@ -14,8 +14,14 @@
 
 @property (nonatomic) BOOL faceUp;
 
-@property (nonatomic) NSUInteger aspectRatio;
+@property (nonatomic) CGFloat faceCardScaleFactor;
+
+- (CGFloat)getCardAspectRatio;
++ (CGFloat)getAspectRatio; // static virtual method? TODO - why overriding in subclass is not working!!!!!!!!!!
 
 - (instancetype)initWithFrame:(CGRect)frame Card:(Card *)card; // virtual method
+- (void)setup;
+- (CGFloat)cornerRadius; // virtual method
+
 
 @end

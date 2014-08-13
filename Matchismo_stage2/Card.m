@@ -11,6 +11,15 @@
 
 @implementation Card
 
+- (NSString *)description
+{
+  return [NSString stringWithFormat:@"Card contents: %@",  self.contents];
+}
+
+// NOTE:
+// In general the base class Card should have 'contents' property and match method
+// However in this particular assignment we only have two games that have very different contents and match rules
+// Therefore, due to time constraints I'm not going to implement this.
 - (int)match:(NSArray *)otherCards
 {
   mustOverride();

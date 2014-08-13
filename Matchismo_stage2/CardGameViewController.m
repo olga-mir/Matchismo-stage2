@@ -58,15 +58,7 @@
 
 - (Grid *)grid
 {
-  if (!_grid) {
-    NSLog(@"Alloc new grid");
-    _grid = [[Grid alloc] init];
-    
-    _grid.size = self.cardsDisplayArea.frame.size;
-    _grid.cellAspectRatio = [self getCardAspectRatio];
-    _grid.minimumNumberOfCells = [self defaultNumOfCardsInGame];
-    
-  }
+  if (!_grid) _grid = [[Grid alloc] init];
   return _grid;
 }
 
@@ -220,6 +212,9 @@
 {
   self.grid.size = self.cardsDisplayArea.frame.size; // it could change due to rotate
   self.grid.minimumNumberOfCells = [self.game curNumberOfCardsInGame];
+  self.grid.cellAspectRatio = [CardView getAspectRatio];
+
+  
   NSLog(@"%@", self.grid);
   
   SYSASSERT(self.grid.inputsAreValid, @"Can't layout the views because grid inputs are invalid"); // TODO - temp. do something sensible later
@@ -336,10 +331,6 @@
   mustOverride();
 }
 
-- (CGFloat)getCardAspectRatio
-{
-  mustOverride();
-}
 
 @end
 
