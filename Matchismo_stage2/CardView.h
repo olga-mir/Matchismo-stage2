@@ -18,10 +18,14 @@
 
 - (CGFloat)getCardAspectRatio;
 + (CGFloat)getAspectRatio; // static virtual method? TODO - why overriding in subclass is not working!!!!!!!!!!
-
-- (instancetype)initWithFrame:(CGRect)frame Card:(Card *)card; // virtual method
 - (void)setup;
-- (CGFloat)cornerRadius; // virtual method
+
+// Virtual methods
+
+- (instancetype)initWithFrame:(CGRect)frame Card:(Card *)card;
+- (CGFloat)cornerRadius;
+- (void)selectOrDeselectCard;
+- (BOOL)getSelectedState;
 
 
 @end

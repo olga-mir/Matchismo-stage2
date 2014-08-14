@@ -26,7 +26,7 @@
   self.contentMode = UIViewContentModeRedraw;
 }
 
-
+/*
 - (void)drawRect:(CGRect)rect
 { 
   // create the genral form of the card: white rounded corners with black stroke
@@ -37,6 +37,7 @@
   [[UIColor blackColor] setStroke];
   [roundedRect stroke];
 }
+*/
 
 + (CGFloat)getAspectRatio {
   return 0.7; // TODO - overridind static virtual method. nuts
@@ -58,7 +59,15 @@
   mustOverride();
 }
 
+- (void)selectOrDeselectCard
+{
+  mustOverride();
+}
 
-
+- (BOOL)getSelectedState
+{
+  mustOverride();
+}
 
 @end
+

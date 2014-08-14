@@ -72,6 +72,11 @@
   [self setNeedsDisplay];
 }
 
+- (BOOL)getSelectedState
+{
+  return self.faceUp;
+}
+
 - (void) pinch:(UIPinchGestureRecognizer *)gesture
 {
   if ((gesture.state == UIGestureRecognizerStateChanged) ||
@@ -80,6 +85,23 @@
     gesture.scale = 1.0; // reset the gesture scale
   }
 }
+
+#pragma mark - Card Behavior
+
+// Toggle the faceUp state and animate the change
+- (void) selectOrDeselectCard
+{
+  UIViewAnimationOptions options = (self.faceUp) ? UIViewAnimationOptionTransitionFlipFromLeft : UIViewAnimationOptionTransitionFlipFromRight;
+  
+  [UIView transitionWithView:self
+                    duration:0.6
+                     options:options
+                  animations:^{
+                    self.faceUp = !self.faceUp;
+                  }
+                  completion:NULL];
+}
+
 
 #pragma mark - Drawing
 
@@ -110,7 +132,13 @@
 
 - (void)drawRect:(CGRect)rect
 {
-  [super drawRect:rect];
+  //[super drawRect:rect];
+  UIBezierPath *roundedRect = [UIBezierPath bezierPathWithRoundedRect:self.bounds cornerRadius:[self cornerRadius]];
+  [roundedRect addClip];
+  [[UIColor whiteColor] setFill];
+  [roundedRect fill];   //UIRectFill(self.bounds);
+  [[UIColor blackColor] setStroke];
+  [roundedRect stroke];
   
   if (self.faceUp) {
     UIImage *faceImage = [UIImage imageNamed:[NSString stringWithFormat:@"%@%@", [self rankAsString], self.suit]];

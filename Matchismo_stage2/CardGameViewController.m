@@ -32,7 +32,8 @@
 // TODO - not yet implemented - when gameInProgress - use KVO. don't try to do graphics when cards are all gone
 // TODO - game over. all matched or remaining cards could not be matched
 // TODO - disable user interaction while animating
-// TODO - disable portrait upsidedown
+// TODO - On Set cards black corner show through
+// TODO - Deal button, score label doesn't appear on the set game screen, and when returning to the playing card game they also disappear
 
 @implementation CardGameViewController
 
@@ -62,7 +63,7 @@
   return _grid;
 }
 
-
+#pragma mark - User Interaction
 // The card views will not handle user's gestures.
 // The gestures will be handled by the game controller since only the view controller
 // has the connection between the cards in the game which is held by model and every individual card view
@@ -87,6 +88,12 @@
   NSUInteger chosenCardIndex = visibleCardIndex; // it is at least a visibleCardIndex
   NSUInteger visibleCards = 0;
   
+  if (chosenCardIndex >= self.game.curNumberOfCardsInGame) {
+    NSLog(@"Touched outside visible cards - doing nothing");
+    return;
+  }
+  
+
   for (int i = 0; i <= [self.cardViews count]; i++) {
     if (![self.cardViews[i] isHidden]) {
       visibleCards++;
@@ -101,59 +108,81 @@
   
   CardView *cardView = [self.cardViews objectAtIndex:chosenCardIndex];
 
-  [UIView transitionWithView:cardView
-                    duration:0.7
-                      options:UIViewAnimationOptionTransitionFlipFromLeft
-                  animations:^{
-                      cardView.faceUp = !cardView.faceUp;
-                    }
-                  completion:^(BOOL finished){
-                      [self.game choseCardAtIndex:chosenCardIndex];
-                      [self animateMatchOutcome];
-                    }];
+  // Change the card view appearance.
+  // It should flip over for the Playing card view or make a selected/de-selected appearance for the Set card
+  [cardView selectOrDeselectCard];
+  
+  // Notify the model about the user's selection and perform the game logic
+  [self.game choseCardAtIndex:chosenCardIndex];
+  
+  // Show the result of this interaction to the user.
+  // Possible results:
+  // 1. There is not yet enough cards to make the match =>
+  //    no visible changes except for the flipping/selecting card, which was already doen
+  // 2. There was a match => remove cards, update score, reposition the remaining cards
+  // 3. There was no match => de-select chosen cards or flip them over to face down
 
+  [self animateMatchOutcome];
 }
 
-// Called after the current tap was processed
+// Called after the current current card selection was processed
 // The current state can be one of:
 // 1. the match is not yet completed (in 2-card-matching only one card is currently selected)
 //    In this case no changes will be detected in this function and there will be no animations
 // 2. the match was completed and resolved -
 //    a) the cards didn't match => the isChosen state has changed and the card must be flipped over, to face down state
-//    b) the cards match => the both cards should dissaper and the rest of the cards moved to utilize the space efficiently
+//    b) the cards match => the both cards should dissappear and the rest of the cards must be moved to utilize the space efficiently
 - (void)animateMatchOutcome
 {
+  // First find the views that need to change appearance then animate the appropriate change
+  NSMutableArray *cardsToHide     = [[NSMutableArray alloc] init];
+  NSMutableArray *cardsToDeselect = [[NSMutableArray alloc] init];
+
   for (int i = 0; i < [self.cardViews count]; i++) {
     
     // get a card from the model and its corresponding view
+    // Both game model and the cardViews hold all the cards that are/were in the game
+    // The cards that previously been matched are not shown
+    // This implementation makes game logic simplier and adheres to the assignment recommendation
     Card *card = [self.game cardAtIndex:i];
     CardView *cardView = self.cardViews[i];
     
-    // Check if a card state has changed, if yes the change must be animated
-    if (card.isMatched != cardView.hidden) { // if card is matched in the the current match
-      [UIView transitionWithView:cardView
-                        duration:0.5
-                         options:UIViewAnimationOptionTransitionCrossDissolve
-                      animations:^{
-                        cardView.hidden = card.isMatched;
-                      }
-                      completion:^(BOOL finished) {
-                        if (cardView.hidden) { // if a card has been taken away - the grid might change
-                          [self rePositionCards];
-                        }
-                      }];
+    // Model ('card') already holds the next game state, while the View is only being updated right now
+    // so 'card' is the next state and 'cardView' is the current state
+    if (card.isMatched != cardView.hidden) {
+      [cardsToHide addObject:cardView];
     }
-    if (card.isChosen != cardView.faceUp) {
-      [UIView transitionWithView:cardView
-                        duration:0.5
-                         options:UIViewAnimationOptionTransitionFlipFromRight
-                      animations:^{
-                        cardView.faceUp = card.isChosen;
-                      }
-                      completion:nil]; // there are no changes in the grid when the card is flipped over
+    
+    if (card.isChosen != [cardView getSelectedState]) { // faceUp for the Playing card and isSelected for Set card
+      [cardsToDeselect addObject:cardView];
     }
   }
+  
+  // Update the selected states of the cards that in this cycle changed this state
+  [cardsToDeselect makeObjectsPerformSelector:@selector(selectOrDeselectCard)];
+  
+  // hide the cards and reposition the remaining if needed
+  if ([cardsToHide count]) {
+    [self hideCards:cardsToHide];
+    [self rePositionCards];
+  }
 }
+
+// Hides the cards in the 'cardsToHide' array while animating the change
+- (void)hideCards:(NSArray *)cardsToHide
+{
+  for (CardView *cardView in cardsToHide) {
+    [UIView transitionWithView:cardView
+                      duration:0.5
+                       options:UIViewAnimationOptionTransitionCrossDissolve
+                    animations:^{
+                      cardView.hidden = YES;
+                    }
+                    completion:NULL];
+    
+  }
+}
+
 
 - (void)rePositionCards
 {
@@ -330,7 +359,6 @@
 {
   mustOverride();
 }
-
 
 @end
 
