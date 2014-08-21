@@ -35,7 +35,17 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
-                                    <action selector="touchDealButton:" destination="ZX6-9Y-ApD" eventType="touchUpInside" id="gzr-HX-W5v"/>
+                                    <action selector="touchDealButton:" destination="ZX6-9Y-ApD" eventType="touchUpInside" id="DIz-Kw-xjV"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FGL-PC-194">
+                                <rect key="frame" x="120" y="481" width="81" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="More Cards">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="touchDealMoreCardsButton:" destination="ZX6-9Y-ApD" eventType="touchUpInside" id="uMa-T8-9DQ"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -43,9 +53,11 @@
                         <constraints>
                             <constraint firstItem="8qO-DX-cQu" firstAttribute="trailing" secondItem="o3O-Zq-KP0" secondAttribute="trailing" id="30d-vJ-M4u"/>
                             <constraint firstItem="E2Q-ia-jnQ" firstAttribute="top" secondItem="Jg4-tC-6h0" secondAttribute="bottom" constant="20" symbolic="YES" id="HRV-2B-tjh"/>
+                            <constraint firstItem="8qO-DX-cQu" firstAttribute="centerX" secondItem="FGL-PC-194" secondAttribute="centerX" id="SPY-lC-Kat"/>
                             <constraint firstItem="8qO-DX-cQu" firstAttribute="leading" secondItem="Jg4-tC-6h0" secondAttribute="leading" id="ZBb-cQ-V5I"/>
                             <constraint firstAttribute="trailing" secondItem="o3O-Zq-KP0" secondAttribute="trailing" constant="20" symbolic="YES" id="aWF-ez-L2E"/>
                             <constraint firstItem="E2Q-ia-jnQ" firstAttribute="top" secondItem="o3O-Zq-KP0" secondAttribute="bottom" constant="20" symbolic="YES" id="o3L-hR-iKn"/>
+                            <constraint firstItem="Jg4-tC-6h0" firstAttribute="bottom" secondItem="FGL-PC-194" secondAttribute="bottom" id="tYG-MG-15h"/>
                             <constraint firstItem="o3O-Zq-KP0" firstAttribute="top" secondItem="8qO-DX-cQu" secondAttribute="bottom" constant="8" symbolic="YES" id="uNe-fY-1Sa"/>
                             <constraint firstItem="Jg4-tC-6h0" firstAttribute="leading" secondItem="JCE-hz-iuD" secondAttribute="leading" constant="20" symbolic="YES" id="xcl-pu-1KN"/>
                             <constraint firstItem="8qO-DX-cQu" firstAttribute="top" secondItem="klL-g6-oAb" secondAttribute="bottom" constant="20" symbolic="YES" id="yco-Bs-chr"/>
@@ -55,8 +67,9 @@
                     <connections>
                         <outlet property="CardsDisplayArea" destination="8qO-DX-cQu" id="HH1-bu-Hd4"/>
                         <outlet property="cardsDisplayArea" destination="8qO-DX-cQu" id="2cG-vl-43a"/>
-                        <outlet property="dealButton" destination="o3O-Zq-KP0" id="kyO-Ir-Wn2"/>
-                        <outlet property="scoreLabel" destination="Jg4-tC-6h0" id="Nhz-7G-0ED"/>
+                        <outlet property="dealButton" destination="o3O-Zq-KP0" id="BQF-ND-qR4"/>
+                        <outlet property="dealMoreCardsButton" destination="FGL-PC-194" id="xcA-Qq-AiF"/>
+                        <outlet property="scoreLabel" destination="Jg4-tC-6h0" id="8dq-2Z-q3I"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ef4-xN-pbM" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -113,7 +126,7 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
-                                    <action selector="touchDealButton:" destination="Uft-Db-M7i" eventType="touchUpInside" id="vas-gj-wBu"/>
+                                    <action selector="touchDealButton:" destination="Uft-Db-M7i" eventType="touchUpInside" id="LU4-6m-Efs"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gjF-qH-BIv">
@@ -123,7 +136,7 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
-                                    <action selector="touchMoreCardsButton:" destination="Uft-Db-M7i" eventType="touchUpInside" id="mFb-K9-YX9"/>
+                                    <action selector="touchDealMoreCardsButton:" destination="Uft-Db-M7i" eventType="touchUpInside" id="rLz-4e-nc5"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -146,9 +159,9 @@
                     <connections>
                         <outlet property="CardsDisplayArea" destination="l3M-oa-qf5" id="yli-Ag-NBQ"/>
                         <outlet property="cardsDisplayArea" destination="l3M-oa-qf5" id="3YL-m5-J32"/>
-                        <outlet property="dealButton" destination="dcR-IE-nWw" id="iaH-3K-c9O"/>
-                        <outlet property="moreCardsButton" destination="gjF-qH-BIv" id="tBy-Oh-lol"/>
-                        <outlet property="scoreLabel" destination="Oho-SO-JoM" id="Eno-0i-Hce"/>
+                        <outlet property="dealButton" destination="dcR-IE-nWw" id="MIX-6H-LuR"/>
+                        <outlet property="dealMoreCardsButton" destination="gjF-qH-BIv" id="0c3-2b-fK1"/>
+                        <outlet property="scoreLabel" destination="Oho-SO-JoM" id="mIk-X2-phO"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="kpp-Rf-qdk" userLabel="First Responder" sceneMemberID="firstResponder"/>

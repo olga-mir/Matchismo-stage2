@@ -13,16 +13,10 @@
 #import "Utils.h"
 
 @interface SetGameVC ()
-@property (weak, nonatomic) IBOutlet UIButton *moreCardsButton;
 
 @end
 
 @implementation SetGameVC
-
-// Request more cards to be added to the current Set game
-- (IBAction)touchMoreCardsButton:(id)sender
-{
-}
 
 
 - (void)viewDidLoad
@@ -41,7 +35,7 @@
 
 #pragma mark - Virtual Methods Implementation
 
-#define DEFAULT_NUM_OF_CARDS_IN_SET_CARD_GAME 16
+#define DEFAULT_NUM_OF_CARDS_IN_SET_CARD_GAME 12
 #define NUMBER_OF_CARDS_TO_MATCH_IN_SET_CARD_GAME 3
 
 - (Deck *)createDeck

@@ -12,7 +12,11 @@
 
 @interface CardMatchingGame : NSObject
 
+// Current game score
 @property (nonatomic, readonly) NSInteger score;
+
+// indication whether there are more matches possible with the cards left
+@property (nonatomic, readonly) BOOL moreMatchesAvailable;
 
 
 // designated initializer

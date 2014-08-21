@@ -25,6 +25,7 @@
 
 @property (weak, nonatomic) IBOutlet UILabel *scoreLabel; // TODO - not yet implemented
 @property (weak, nonatomic) IBOutlet UIButton *dealButton;
+@property (weak, nonatomic) IBOutlet UIButton *dealMoreCardsButton;
 
 @end
 
@@ -63,7 +64,54 @@
   return _grid;
 }
 
-#pragma mark - User Interaction
+
+#pragma mark - Lifecycle
+
+- (void)viewDidLoad
+{
+  NSLog(@"CardGameVC: viewDidLoad");
+  
+  [super viewDidLoad];
+  
+  [self.cardsDisplayArea setBackgroundColor:[UIColor clearColor]]; // the view has alpha 1 and clearColor, so that the subviews will be visible
+  
+  // The card views will not handle user's gestures.
+  // The gestures will be handled by the game controller since only the view controller
+  // has the connection between the cards in the game which is held by model and every individual card view
+  // see the tap gesture handler in this VC for more explanation about this implementation decision
+  [self.cardsDisplayArea addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)]];
+  
+  [self createCardViews];
+  
+  [self.game addObserver:self forKeyPath:@"moreMatchesAvailable" options:NSKeyValueObservingOptionNew context:NULL];
+}
+
+
+#pragma mark - Outlets
+
+// at this stage the deal button doesn't prompt the user if he really intends to drop current game
+// TODO - animate departure of old cards and arrival of new ones
+- (IBAction)touchDealButton:(id)sender
+{
+  NSLog(@"DEAL - in the main VC");
+  
+  // reset the model
+  [self.game restartGame];
+  
+  // reset the controller
+  [self.cardViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+  [self.cardViews removeAllObjects];
+  
+  // this will also reset the grid
+  [self createCardViews];
+}
+
+- (IBAction)touchDealMoreCardsButton:(UIButton *)sender
+{
+  
+}
+
+
 // The card views will not handle user's gestures.
 // The gestures will be handled by the game controller since only the view controller
 // has the connection between the cards in the game which is held by model and every individual card view
@@ -93,7 +141,6 @@
     return;
   }
   
-
   for (int i = 0; i <= [self.cardViews count]; i++) {
     if (![self.cardViews[i] isHidden]) {
       visibleCards++;
@@ -191,51 +238,30 @@
   
   NSUInteger currVisibleInd = 0;
   
+  // Interate over all cardView Views and animate frame change for visible cardViews
   for (NSUInteger currInd = 0; currInd < [self.cardViews count]; currInd++) {
     
     CardView *cardView = self.cardViews[currInd];
     
     if (!cardView.isHidden) {
       
+      // get the current frame new origin and size according to the grid
       CGRect frame = [self setupFrameAtIndex:currVisibleInd];
       
       currVisibleInd++;
       
-      // Animate changes in the frame (it there were any)
-      if ([self isDifferentFrame:frame anotherFrame:cardView.frame]) {
-        
-        [UIView transitionWithView:cardView
-                          duration:0.6
-                           options:UIViewAnimationOptionTransitionNone
-                        animations:^{
-                          cardView.frame = frame;
-                        }
-                        completion:nil];
-      }
+      // if frame has changed (both position or size) animate this change
+      [UIView transitionWithView:cardView
+                        duration:0.6
+                          options:UIViewAnimationOptionTransitionNone
+                      animations:^{
+                        cardView.frame = frame;
+                      }
+                      completion:nil];
     }
   }
 }
 
-// TODO - research how to compare frames, or work with floats make params pass by const reference.
-- (BOOL)isDifferentFrame:(CGRect)frame anotherFrame:(CGRect)anotherFrame
-{
-  BOOL differentFrame = NO;
-  
-  // the frame of a card can change as a result of the current match in two cases:
-  // 1. the rest of the cards have to move to cover the spaces. The frame will have different origin.
-  // 2. the last row had been cleared out, and there is more space for each of the rest of the cards. The frame will be bigger.
-  
-  // case 1. NB: it will be sufficient in this implementation to test only the x component
-  if ((abs(frame.origin.x - anotherFrame.origin.x) > 0.00001) ||
-      (abs(frame.origin.y - anotherFrame.origin.y) > 0.00001)) {
-    differentFrame = YES;
-  
-  // case 2. Since cards are proportional in the game it is sufficient to check one (any) dimension
-  } else if (abs(frame.size.height - anotherFrame.size.height) > 0.00001) {
-    differentFrame = YES;
-  }
-  return differentFrame;
-}
 
 - (void)gridSetup
 {
@@ -251,30 +277,16 @@
 
 #define CARD_VIEW_SCALE_FACTOR 0.97
 
-- (void)viewDidLoad
-{
-  NSLog(@"CardGameVC: viewDidLoad");
-  
-  [super viewDidLoad];
-  
-  [self.cardsDisplayArea setBackgroundColor:[UIColor clearColor]]; // the view has alpha 1 and clearColor, so that the subviews will be visible
-  
-  // The card views will not handle user's gestures.
-  // The gestures will be handled by the game controller since only the view controller
-  // has the connection between the cards in the game which is held by model and every individual card view
-  // see the tap gesture handler in this VC for more explanation about this implementation decision
-  [self.cardsDisplayArea addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)]];
-  
-  [self createCardViews];
-}
-
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-  [self gridSetup];
   [self rePositionCards];
 }
 
+// Create the CardViews - array of Card views. This array holds the maximum value of cards that has ever been in the current game
+// i.e. if the game started with 12 cards and then at some point user requested 3 more cards,
+// then this array will hold 15 UIViews objects no matter how many matches have been discovered since then.
+// Some of these Views will eventually be hidden
 - (void)createCardViews
 {
   // first of all - set up the grid. The grid will affect the cards size.
@@ -315,19 +327,31 @@
   return frame;
 }
 
-#pragma mark - User Interface
-
-// at this stage the deal button doesn't prompt the user if he really intends to drop current game
-// TODO - animate departure of old cards and arrival of new ones
-- (IBAction)touchDealButton:(id)sender
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary *)change
+                       context:(void *)context
 {
-  NSLog(@"DEAL - in the main VC");
-  
-  [self.game restartGame];
-  
-  [self.cardViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-  [self.cardViews removeAllObjects];
-  [self createCardViews];
+  if ([keyPath isEqual:@"moreMatchesAvailable"]) {
+    if ([[change objectForKey:NSKeyValueChangeNewKey] integerValue] == 0) { // new value of 'moreMatchesAvailable' is 0
+      
+      // No matches can be done with the remaining cards
+      NSLog(@"GAME OVER!!!!!!!!!");
+      
+      // TODO - before removing the cards, first flip them over to show that there are no matches
+      // TODO - set game over message, create deal button below it and hide the deal button in its original position
+      
+      // Remove all remaining visible cards from the board
+      NSMutableArray *cardsToHide = [[NSMutableArray alloc] init];
+      for (CardView *cv in self.cardViews) {
+        if (!cv.isHidden) {
+          [cardsToHide addObject:cv];
+        }
+      }
+      [self hideCards:cardsToHide];
+    }
+    
+  }
 }
 
 

@@ -7,6 +7,7 @@
 //
 
 #import "PlayingCard.h"
+#import "Utils.h"
 
 @implementation PlayingCard
 
@@ -64,7 +65,9 @@
   // we need to continue look for matches between the cards in otherCards array
   while ([otherCardsMutableArr count] >= 1) {
     
-    for (PlayingCard *otherCard in otherCardsMutableArr) { // TODO - introspection
+    for (PlayingCard *otherCard in otherCardsMutableArr) {
+      
+      SYSASSERT([otherCard isKindOfClass:[PlayingCard class]], @"Unexpected type of card");
       
       if (otherCard.rank == currentCard.rank) {
         rankMatches++;
@@ -73,7 +76,7 @@
       }
     }
     
-    // now take one card from the 'other' array and try to mathc it to its recent peers.
+    // now take one card from the 'other' array and try to match it to its recent peers.
     currentCard = [otherCardsMutableArr lastObject]; // there is no order preference
     [otherCardsMutableArr removeLastObject];
   }
