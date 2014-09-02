@@ -75,16 +75,112 @@
   
   [self.cardsDisplayArea setBackgroundColor:[UIColor clearColor]]; // the view has alpha 1 and clearColor, so that the subviews will be visible
   
-  // The card views will not handle user's gestures.
-  // The gestures will be handled by the game controller since only the view controller
-  // has the connection between the cards in the game which is held by model and every individual card view
+  NSLog(@"self.displayArea size: (%f, %f)", self.cardsDisplayArea.frame.size.width, self.cardsDisplayArea.frame.size.height);
+  
+  // The card views do not handle user's gestures.
+  // The gestures are handled by the game controller since only the view controller
+  // has the connection between the cards in the game which is held by Model and every individual card view in the View
   // see the tap gesture handler in this VC for more explanation about this implementation decision
   [self.cardsDisplayArea addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)]];
   
   [self createCardViews];
-  
+
   [self.game addObserver:self forKeyPath:@"moreMatchesAvailable" options:NSKeyValueObservingOptionNew context:NULL];
 }
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+  [self rePositionCards];
+}
+
+#pragma mark - Creating Card Views
+
+#define CARD_VIEW_SCALE_FACTOR 0.97
+
+/**
+ *  Create the CardViews - array of Card views. This array holds the maximum value of cards that has ever been in the current game i.e. if the game started with 12 cards and then at some point user requested 3 more cards, then this array will hold 15 UIViews objects no matter how many matches have been discovered since then. Some of these Views will eventually be hidden
+ */
+- (void)createCardViews
+{
+  [self addViewForCardsFromIndex:0 toIndex:(self.game.curNumberOfCardsInGame - 1)];
+}
+
+- (void)addViewForCardsFromIndex:(NSUInteger)fromInd toIndex:(NSUInteger)toInd
+{
+  NSLog(@"fromInd = %d, toInd = %d", fromInd, toInd);
+  
+  // The grid will affect the cards size so it must be setup before constructing new CardView objects
+  [self gridSetup];
+  
+  for (NSUInteger cardInd = fromInd; cardInd <= toInd; cardInd++) {
+    
+    // Only on the first time when creating the views don't translate indexes
+    NSUInteger gridIndex = ([self.cardViews count]) ? [self translateToGameIndexFromVisibleIndex:cardInd] : cardInd;
+    
+    CGRect frameFinalPosition = [self setupFrameAtIndex:gridIndex];
+    //CGRect frameTempPosition = frameFinalPosition;
+    //frameTempPosition.origin = CGPointMake(500.0, 500.0);
+    
+    Card *card = [self.game cardAtIndex:cardInd];
+    SYSASSERT(card, @"Card should not be nil");
+    
+    CardView *cardView = [self createCardViewWithFrame:frameFinalPosition withCard:card];
+    SYSASSERT(cardView, @"CardView should not be nil");
+    
+    [self.cardViews addObject:cardView];
+    [self.cardsDisplayArea addSubview:cardView];
+    NSLog(@"Added at the index %d: CardView - %@, Card - %@", cardInd, cardView.contents, card.contents);
+/*
+    
+    [UIView transitionWithView:cardView
+                      duration:0.5
+                       options:UIViewAnimationOptionTransitionNone
+                    animations:^{
+                      cardView.frame = frameFinalPosition;
+                    }
+                    completion:^(BOOL finished){
+                      
+                    }];
+  */
+  }
+}
+
+// Create a frame for a card at the given index, according to the current grid
+- (CGRect)setupFrameAtIndex:(int)cardInd // TODO - by reference?
+{
+  NSUInteger r = cardInd / self.grid.columnCount;
+  NSUInteger c = cardInd % self.grid.columnCount;
+  
+  CGRect gridCell = [self.grid frameOfCellAtRow:r inColumn:c];
+  
+  // frames provided by grid take all the available space, so the frame for the card view
+  // should be scaled a little in order to provide some spacing between them
+  CGRect frame;
+  frame.size.width  = gridCell.size.width * CARD_VIEW_SCALE_FACTOR;
+  frame.size.height = gridCell.size.height * CARD_VIEW_SCALE_FACTOR;
+  
+  // Also the frame must be positioned in the center of the grid cell
+  frame.origin.x = gridCell.origin.x + (gridCell.size.height - frame.size.height) / 2;
+  frame.origin.y = gridCell.origin.y + (gridCell.size.width - frame.size.width) / 2;
+  
+  return frame;
+}
+
+
+/**
+ *  Setup the grid inputs. Grid is based on 3 inputs: size, aspect ration and number of cells. During the game any of this can change and therefore the grid should be updated in the appropriate places in the code. For example card removal due to match, adding more cards. 
+ */
+- (void)gridSetup
+{
+  self.grid.size = self.cardsDisplayArea.frame.size;
+  self.grid.minimumNumberOfCells = [self.game curNumberOfCardsInGame];
+  self.grid.cellAspectRatio = [CardView getAspectRatio];
+  
+  NSLog(@"%@", self.grid);
+  
+  SYSASSERT(self.grid.inputsAreValid, @"Can't layout the views because grid inputs are invalid");
+}
+
 
 
 #pragma mark - Outlets
@@ -106,61 +202,57 @@
   [self createCardViews];
 }
 
+
+/**
+ *  UI outlet to let user request more cards to be added to the current game.
+ *
+ *  @param sender sender is the button that triggered this handler. It is not used.
+ */
 - (IBAction)touchDealMoreCardsButton:(UIButton *)sender
 {
+  NSUInteger prevNumOfCards = [self.cardViews count];
   
+  [self.game addCardsToPlay:[self numOfCardsToMatch]];
+  
+  [self addViewForCardsFromIndex:prevNumOfCards toIndex:[self.cardViews count] + [self numOfCardsToMatch] - 1];
+  [self rePositionCards];
 }
 
 
-// The card views will not handle user's gestures.
-// The gestures will be handled by the game controller since only the view controller
-// has the connection between the cards in the game which is held by model and every individual card view
-// Other options could be storing the card index at the view, which is bad because it mixes the view with model
-// or the view could notify the VC of its value. But that will make it impossible to use
-// for a game with two identical decks or for a deck with two or more sets of identical cards in it
-// TODO - see if view.tag can help
+/**
+ *  Tap gesture recogniser. The gestures are handled by the game controller since only the VC has the connection between the cards in the game which is held by model and every individual card view.
+ *
+ *  @param tapGesture the sender of the event
+ */
 - (void)tap:(UITapGestureRecognizer *)tapGesture
 {
-  NSLog(@"Tap gesture recognizer in main VC");
-  
   CGPoint tapLocation = [tapGesture locationInView:self.cardsDisplayArea];
   
   NSUInteger row = tapLocation.y / self.grid.cellSize.height;
   NSUInteger col = tapLocation.x / self.grid.cellSize.width;
   NSUInteger visibleCardIndex = row * self.grid.columnCount + col;
   
-  // visibleCardIndex is the index of the card view which received this gesture. It is index in
-  // the GRID. But cards in game model and in VC array of views are not removed after the match, they are simply hidden
-  // So the index in the grid must be offset by the number of hidden card views, before this particular index,
-  // to represent the actual card index held by the game logic
-  NSUInteger chosenCardIndex = visibleCardIndex; // it is at least a visibleCardIndex
-  NSUInteger visibleCards = 0;
-  
-  if (chosenCardIndex >= self.game.curNumberOfCardsInGame) {
-    NSLog(@"Touched outside visible cards - doing nothing");
+  if (visibleCardIndex >= self.game.curNumberOfCardsInGame) {
+    NSLog(@"Touched outside visible cards - ingnoring the touch");
     return;
   }
   
-  for (int i = 0; i <= [self.cardViews count]; i++) {
-    if (![self.cardViews[i] isHidden]) {
-      visibleCards++;
-    }
-    
-    if (visibleCards == visibleCardIndex + 1) {
-      chosenCardIndex = i;
-      break;
-    }
-  }
-  NSLog(@"index translation: visibleCardIndex = %d, chosenCardIndex = %d", visibleCardIndex, chosenCardIndex);
+  NSUInteger chosenCardIndex = [self translateToGameIndexFromVisibleIndex:visibleCardIndex];
   
   CardView *cardView = [self.cardViews objectAtIndex:chosenCardIndex];
+  NSLog(@"cardView: %@", cardView);
 
   // Change the card view appearance.
   // It should flip over for the Playing card view or make a selected/de-selected appearance for the Set card
   [cardView selectOrDeselectCard];
   
   // Notify the model about the user's selection and perform the game logic
-  [self.game choseCardAtIndex:chosenCardIndex];
+  //[self.game choseCardAtIndex:chosenCardIndex];
+  Card *card = [self.game debugWrapper_choseCardAtIndex:chosenCardIndex];
+  if (![cardView.contents isEqual:card.contents]) {
+    NSString *msg = [NSString stringWithFormat:@"Inconsistensy in Model and View indexes! Index: chosenCardIndex, View: %@, Model: %@", cardView.contents, card.contents];
+    SYSASSERT(NO, msg);
+  }
   
   // Show the result of this interaction to the user.
   // Possible results:
@@ -172,13 +264,46 @@
   [self animateMatchOutcome];
 }
 
-// Called after the current current card selection was processed
-// The current state can be one of:
-// 1. the match is not yet completed (in 2-card-matching only one card is currently selected)
-//    In this case no changes will be detected in this function and there will be no animations
-// 2. the match was completed and resolved -
-//    a) the cards didn't match => the isChosen state has changed and the card must be flipped over, to face down state
-//    b) the cards match => the both cards should dissappear and the rest of the cards must be moved to utilize the space efficiently
+
+/**
+ *  Translate index from the game model logic which holds all the cards that ever were dealt in this game, in their original order to the grid of the visible cards only. Index in the grid is calculated from the tap gesture recogniser, to translate it to the game logic index the visible index must be offset by amount of the hidden cards upto this particular index
+ *
+ *  @param visibleCardIndex index in the grid of visible cards
+ *
+ *  @return index in the game array of cards
+ */
+- (NSUInteger)translateToGameIndexFromVisibleIndex:(NSUInteger)visibleCardIndex
+{
+  NSUInteger chosenCardIndex = visibleCardIndex; // it is at least a visibleCardIndex
+  NSUInteger visibleCards = 0;
+  
+  SYSASSERT([self.cardViews count], @"CardViews array is empty - nothing to translate");
+  
+  for (int i = 0; i < [self.cardViews count]; i++) {
+    if (![self.cardViews[i] isHidden]) {
+      visibleCards++;
+    }
+    
+    if (visibleCards == visibleCardIndex + 1) {
+      chosenCardIndex = i;
+      break;
+    }
+  }
+  NSLog(@"index translation: visibleCardIndex = %d, chosenCardIndex = %d", visibleCardIndex, chosenCardIndex);
+  
+  return chosenCardIndex;
+}
+
+
+/**
+ *  This function is called after the current match has been resolved. The match can lead to one of the following states:
+  1. the match is not yet completed (in 2-card-matching only one card is currently selected)
+     In this case no changes will be detected in this function and there will be no animations
+  2. the match was completed and resolved -
+     a) the cards didn't match => the isChosen state has changed and the card must be flipped over, to face down state
+     b) the cards match => the both cards should dissappear and the rest of the cards must be moved to utilize the space efficiently
+
+ */
 - (void)animateMatchOutcome
 {
   // First find the views that need to change appearance then animate the appropriate change
@@ -205,17 +330,21 @@
     }
   }
   
-  // Update the selected states of the cards that in this cycle changed this state
+  // Update the selected states of the cards that changed their state in this cycle
   [cardsToDeselect makeObjectsPerformSelector:@selector(selectOrDeselectCard)];
   
   // hide the cards and reposition the remaining if needed
   if ([cardsToHide count]) {
     [self hideCards:cardsToHide];
-    [self rePositionCards];
   }
 }
 
-// Hides the cards in the 'cardsToHide' array while animating the change
+
+/**
+ *  Hides the cards in the given array while animating this change. After the CardViews ahd dissapear from the screen the rest of the cards should reposition themself
+ *
+ *  @param cardsToHide array of cardViews that need to be hidden
+ */
 - (void)hideCards:(NSArray *)cardsToHide
 {
   for (CardView *cardView in cardsToHide) {
@@ -225,12 +354,17 @@
                     animations:^{
                       cardView.hidden = YES;
                     }
-                    completion:NULL];
+                    completion:^(BOOL finished){
+                      [self rePositionCards];
+                    }];
     
   }
 }
 
 
+/**
+ *  Recalculate the size and the position of the cards that are currently in the game. After number of cards had
+ */
 - (void)rePositionCards
 {
   // re-arrange cards to take all the available screen space
@@ -262,98 +396,47 @@
   }
 }
 
-
-- (void)gridSetup
-{
-  self.grid.size = self.cardsDisplayArea.frame.size; // it could change due to rotate
-  self.grid.minimumNumberOfCells = [self.game curNumberOfCardsInGame];
-  self.grid.cellAspectRatio = [CardView getAspectRatio];
-
-  
-  NSLog(@"%@", self.grid);
-  
-  SYSASSERT(self.grid.inputsAreValid, @"Can't layout the views because grid inputs are invalid"); // TODO - temp. do something sensible later
-}
-
-#define CARD_VIEW_SCALE_FACTOR 0.97
-
-
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{
-  [self rePositionCards];
-}
-
-// Create the CardViews - array of Card views. This array holds the maximum value of cards that has ever been in the current game
-// i.e. if the game started with 12 cards and then at some point user requested 3 more cards,
-// then this array will hold 15 UIViews objects no matter how many matches have been discovered since then.
-// Some of these Views will eventually be hidden
-- (void)createCardViews
-{
-  // first of all - set up the grid. The grid will affect the cards size.
-  [self gridSetup];
-
-  for (int cardInd = 0; cardInd < self.game.curNumberOfCardsInGame; cardInd++) {
-    
-    CGRect frame = [self setupFrameAtIndex:cardInd];
-    
-    Card *card = [self.game cardAtIndex:cardInd];
-    SYSASSERT((card), @"Card Should not be nil");
-    
-    CardView *cardView = [self createCardViewWithFrame:frame withCard:card];
-    SYSASSERT((cardView), @"CardView should not be nil");
-    
-    [self.cardViews addObject:cardView];
-    [self.cardsDisplayArea addSubview:cardView];
-  }
-}
-
-- (CGRect)setupFrameAtIndex:(int)cardInd // TODO - by reference?
-{
-  NSUInteger r = cardInd / self.grid.columnCount;
-  NSUInteger c = cardInd % self.grid.columnCount;
-  
-  CGRect gridCell = [self.grid frameOfCellAtRow:r inColumn:c];
-  
-  // frames provided by grid take all the available space, so the frame for the card view
-  // should be scalled a little in order to provide some spacing between them
-  CGRect frame;
-  frame.size.width  = gridCell.size.width * CARD_VIEW_SCALE_FACTOR;
-  frame.size.height = gridCell.size.height * CARD_VIEW_SCALE_FACTOR;
-  
-  // Also the frame must be positioned in the center of the grid cell
-  frame.origin.x = gridCell.origin.x + (gridCell.size.height - frame.size.height) / 2;
-  frame.origin.y = gridCell.origin.y + (gridCell.size.width - frame.size.width) / 2;
-  
-  return frame;
-}
-
+/**
+ *  Observe value for the game over indication from the model.
+ *
+ *  @param keyPath keyPath for the key indicating game over state in the model
+ *  @param object  not used
+ *  @param change  change is replacement of the old value with the new one
+ *  @param context not used
+ */
 - (void)observeValueForKeyPath:(NSString *)keyPath
                       ofObject:(id)object
                         change:(NSDictionary *)change
                        context:(void *)context
 {
-  if ([keyPath isEqual:@"moreMatchesAvailable"]) {
+  if ((object == _game) && ([keyPath isEqual:@"moreMatchesAvailable"])) {
     if ([[change objectForKey:NSKeyValueChangeNewKey] integerValue] == 0) { // new value of 'moreMatchesAvailable' is 0
-      
-      // No matches can be done with the remaining cards
-      NSLog(@"GAME OVER!!!!!!!!!");
-      
-      // TODO - before removing the cards, first flip them over to show that there are no matches
-      // TODO - set game over message, create deal button below it and hide the deal button in its original position
-      
-      // Remove all remaining visible cards from the board
-      NSMutableArray *cardsToHide = [[NSMutableArray alloc] init];
-      for (CardView *cv in self.cardViews) {
-        if (!cv.isHidden) {
-          [cardsToHide addObject:cv];
-        }
-      }
-      [self hideCards:cardsToHide];
+      [self gameOver];
     }
-    
   }
 }
 
+
+/**
+ *  Notify user that the current game is over.
+ */
+- (void)gameOver
+{
+  // No matches can be done with the remaining cards
+  NSLog(@"GAME OVER!");
+  
+  // TODO - before removing the cards, first flip them over to show that there are no matches
+  // TODO - set game over message, create deal button below it and hide the deal button in its original position
+  
+  // Remove all remaining visible cards from the board
+  NSMutableArray *cardsToHide = [[NSMutableArray alloc] init];
+  for (CardView *cv in self.cardViews) {
+    if (!cv.isHidden) {
+      [cardsToHide addObject:cv];
+    }
+  }
+  [self hideCards:cardsToHide];
+}
 
 #pragma mark - Virtual Methods
 // Used throw exception mechanism in order to enforce the abstracness of these methods.
@@ -383,6 +466,7 @@
 {
   mustOverride();
 }
+
 
 @end
 

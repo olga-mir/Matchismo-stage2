@@ -16,6 +16,8 @@
 
 @property (nonatomic) CGFloat faceCardScaleFactor;
 
+@property (strong, nonatomic)NSString *contents;
+
 - (CGFloat)getCardAspectRatio;
 + (CGFloat)getAspectRatio; // static virtual method? TODO - why overriding in subclass is not working!!!!!!!!!!
 - (void)setup;

@@ -49,4 +49,11 @@
   return randomCard;
 }
 
+// return the current number of cards in the deck
+- (NSUInteger)remainingCards
+{
+  return [self.cards count];
+}
+
+
 @end

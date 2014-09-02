@@ -10,6 +10,7 @@
 //
 
 #import "SetCard.h"
+#import "Utils.h"
 
 @implementation SetCard
 
@@ -89,47 +90,69 @@
 }
 
 
-#define RANK_MATCH_SCORE 4
-#define SUIT_MATCH_SCORE 2
+#define POINTS_FOR_MATCH 6
 
+typedef enum RULES {
+  NUMBER_RULE   = 0x1,
+  SHAPE_RULE    = 0x2,
+  FILLING_RULE  = 0x4,
+  COLOR_RULE    = 0x8,
+  ALL_RULES     = NUMBER_RULE | SHAPE_RULE | FILLING_RULE | COLOR_RULE,
+} rules_e;
+
+/**
+ *  Card matches itself to the two other cards according to Set card game rules
+ *
+ *  @param otherCards array of other two cards to try and match this card
+ *
+ *  @return the score for the match. If the three cards form a Set, then positive number must be returned, otherwise it should be 0 or negative.
+ */
 - (int)match:(NSArray *)otherCards
 {
-
+  // Set is always three card game
+  SYSASSERT(([otherCards count] == 2), @"The Set game is always a 3-card matching game. Number of cards provided for matching is not 3");
+  
   int score = 0;
-/*  int rankMatches = 0;
-  int suitMatches = 0;
+  SetCard *card2 = [otherCards firstObject];
+  SetCard *card3 = [otherCards lastObject];
   
-  PlayingCard *currentCard = self;
-  NSMutableArray *otherCardsMutableArr = [otherCards mutableCopy];
+  rules_e setRules = 0;
+  // General rule, that has to be checked for every property of the Set card (number, shape, filling, color)
+  // "They all have the same __property__ or they have three different __property__s"
+  // in order to make a Set ALL of these rules must be satisfied
   
-  
-  // We have a card and an array of other cards to match this card to
-  // Once we've matched the current card to all the cards in otherCards array
-  // we need to continue look for matches between the cards in otherCards array
-  while ([otherCardsMutableArr count] >= 1) {
-    
-    for (PlayingCard *otherCard in otherCardsMutableArr) { // TODO - introspection
-      
-      if (otherCard.rank == currentCard.rank) {
-        rankMatches++;
-      } else if ([otherCard.suit isEqualToString:currentCard.suit]) {
-        suitMatches++;
-      }
-    }
-    
-    // now take one card from the 'other' array and try to mathc it to its recent peers.
-    currentCard = [otherCardsMutableArr lastObject]; // there is no order preference
-    [otherCardsMutableArr removeLastObject];
+  // Rule 1: They all have the same NUMBER or they have three different NAMBERs
+  if ( ((self.rank == card3.rank) && (card2.rank == card3.rank)) ||
+       ((self.rank != card2.rank) && (self.rank != card3.rank) && (card2.rank != card3.rank)) ) {
+    setRules |= NUMBER_RULE;
+  }
+
+  // Rule 2: They all have the same SHAPE or they have three different SHAPEs
+  if ( ([self.shape isEqualToString:card3.shape] && [card2.shape isEqualToString:card3.shape]) ||
+      ((![self.shape isEqualToString:card2.shape]) && (![self.shape isEqualToString:card3.shape]) && (![card2.shape isEqualToString:card3.shape])) ) {
+    setRules |= SHAPE_RULE;
+  }
+
+  // Rule 3: They all have the same FILLING or they have three different FILLINGs
+  if ( ([self.filling isEqualToString:card3.filling] && [card2.filling isEqualToString:card3.filling]) ||
+      ((![self.filling isEqualToString:card2.filling]) && (![self.filling isEqualToString:card3.filling]) && (![card2.filling isEqualToString:card3.filling])) ) {
+    setRules |= FILLING_RULE;
   }
   
-  score += rankMatches * RANK_MATCH_SCORE;
-  score += suitMatches * SUIT_MATCH_SCORE;
-*/
+  // Rule 4: They all have the same COLOR or they have three different COLORs
+  if ( ([self.color isEqualToString:card3.color] && [card2.color isEqualToString:card3.color]) ||
+      ((![self.color isEqualToString:card2.color]) && (![self.color isEqualToString:card3.color]) && (![card2.color isEqualToString:card3.color])) ) {
+    setRules |= COLOR_RULE;
+  }
+  
+  NSLog(@"Set rules fulfilment: 0x%x (0001 - number, 0010 - shape, 0100 - filling, 1000 - color)", setRules);
+  
+  // a group of 3 cards is only a Set when it satisfies all the above rules
+  if ((setRules & ALL_RULES) == ALL_RULES) {
+    score = POINTS_FOR_MATCH;
+  }
   return score;
-
 }
-
-
 
 
 @end

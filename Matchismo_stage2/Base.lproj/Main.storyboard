@@ -51,16 +51,16 @@
                         </subviews>
                         <color key="backgroundColor" red="0.0" green="0.50196081400000003" blue="0.25098040700000002" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
-                            <constraint firstItem="8qO-DX-cQu" firstAttribute="trailing" secondItem="o3O-Zq-KP0" secondAttribute="trailing" id="30d-vJ-M4u"/>
-                            <constraint firstItem="E2Q-ia-jnQ" firstAttribute="top" secondItem="Jg4-tC-6h0" secondAttribute="bottom" constant="20" symbolic="YES" id="HRV-2B-tjh"/>
-                            <constraint firstItem="8qO-DX-cQu" firstAttribute="centerX" secondItem="FGL-PC-194" secondAttribute="centerX" id="SPY-lC-Kat"/>
-                            <constraint firstItem="8qO-DX-cQu" firstAttribute="leading" secondItem="Jg4-tC-6h0" secondAttribute="leading" id="ZBb-cQ-V5I"/>
+                            <constraint firstAttribute="trailing" secondItem="8qO-DX-cQu" secondAttribute="trailing" constant="20" symbolic="YES" id="3Kn-8Q-aaN"/>
+                            <constraint firstItem="FGL-PC-194" firstAttribute="top" secondItem="8qO-DX-cQu" secondAttribute="bottom" constant="8" symbolic="YES" id="5Yb-QY-2Gk"/>
+                            <constraint firstItem="8qO-DX-cQu" firstAttribute="centerX" secondItem="FGL-PC-194" secondAttribute="centerX" constant="-0.5" id="Lra-JW-lSh"/>
+                            <constraint firstItem="Jg4-tC-6h0" firstAttribute="leading" secondItem="JCE-hz-iuD" secondAttribute="leading" constant="20" symbolic="YES" id="MoB-8v-6Rd"/>
+                            <constraint firstItem="E2Q-ia-jnQ" firstAttribute="top" secondItem="Jg4-tC-6h0" secondAttribute="bottom" constant="20" symbolic="YES" id="Pab-aA-OTW"/>
                             <constraint firstAttribute="trailing" secondItem="o3O-Zq-KP0" secondAttribute="trailing" constant="20" symbolic="YES" id="aWF-ez-L2E"/>
+                            <constraint firstItem="8qO-DX-cQu" firstAttribute="leading" secondItem="JCE-hz-iuD" secondAttribute="leading" constant="20" symbolic="YES" id="cvg-1K-8Ei"/>
+                            <constraint firstItem="E2Q-ia-jnQ" firstAttribute="top" secondItem="FGL-PC-194" secondAttribute="bottom" constant="20" symbolic="YES" id="hL5-MM-GgG"/>
                             <constraint firstItem="E2Q-ia-jnQ" firstAttribute="top" secondItem="o3O-Zq-KP0" secondAttribute="bottom" constant="20" symbolic="YES" id="o3L-hR-iKn"/>
-                            <constraint firstItem="Jg4-tC-6h0" firstAttribute="bottom" secondItem="FGL-PC-194" secondAttribute="bottom" id="tYG-MG-15h"/>
-                            <constraint firstItem="o3O-Zq-KP0" firstAttribute="top" secondItem="8qO-DX-cQu" secondAttribute="bottom" constant="8" symbolic="YES" id="uNe-fY-1Sa"/>
-                            <constraint firstItem="Jg4-tC-6h0" firstAttribute="leading" secondItem="JCE-hz-iuD" secondAttribute="leading" constant="20" symbolic="YES" id="xcl-pu-1KN"/>
-                            <constraint firstItem="8qO-DX-cQu" firstAttribute="top" secondItem="klL-g6-oAb" secondAttribute="bottom" constant="20" symbolic="YES" id="yco-Bs-chr"/>
+                            <constraint firstItem="8qO-DX-cQu" firstAttribute="top" secondItem="klL-g6-oAb" secondAttribute="bottom" constant="20" symbolic="YES" id="xRr-7X-DQB"/>
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="Playing Card Game" id="V73-Pt-DAu"/>
@@ -113,7 +113,7 @@
                                 <color key="backgroundColor" white="1" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Score: 0" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Oho-SO-JoM">
-                                <rect key="frame" x="20" y="490" width="64" height="21"/>
+                                <rect key="frame" x="20" y="481" width="64" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
@@ -146,10 +146,11 @@
                             <constraint firstItem="gjF-qH-BIv" firstAttribute="top" secondItem="l3M-oa-qf5" secondAttribute="bottom" constant="8" symbolic="YES" id="IpA-B1-F28"/>
                             <constraint firstItem="cD7-Ta-bJ4" firstAttribute="top" secondItem="Oho-SO-JoM" secondAttribute="bottom" constant="20" symbolic="YES" id="K3V-oD-V66"/>
                             <constraint firstItem="Oho-SO-JoM" firstAttribute="leading" secondItem="MyH-3Q-hJN" secondAttribute="leading" constant="20" symbolic="YES" id="L1u-1F-96L"/>
-                            <constraint firstItem="Oho-SO-JoM" firstAttribute="bottom" secondItem="dcR-IE-nWw" secondAttribute="bottom" id="ago-UI-SPJ"/>
+                            <constraint firstItem="dcR-IE-nWw" firstAttribute="top" secondItem="l3M-oa-qf5" secondAttribute="bottom" constant="8" symbolic="YES" id="Nty-8C-7IK"/>
+                            <constraint firstItem="Oho-SO-JoM" firstAttribute="top" secondItem="l3M-oa-qf5" secondAttribute="bottom" constant="8" symbolic="YES" id="WB4-k1-QpV"/>
+                            <constraint firstItem="cD7-Ta-bJ4" firstAttribute="top" secondItem="gjF-qH-BIv" secondAttribute="bottom" constant="20" symbolic="YES" id="grP-XS-oTi"/>
                             <constraint firstItem="gjF-qH-BIv" firstAttribute="centerX" secondItem="l3M-oa-qf5" secondAttribute="centerX" id="h5D-TS-AmH"/>
                             <constraint firstItem="l3M-oa-qf5" firstAttribute="leading" secondItem="MyH-3Q-hJN" secondAttribute="leading" constant="20" symbolic="YES" id="j3N-nv-6Y4"/>
-                            <constraint firstItem="Oho-SO-JoM" firstAttribute="bottom" secondItem="gjF-qH-BIv" secondAttribute="bottom" id="jns-uh-Ds3"/>
                             <constraint firstAttribute="trailing" secondItem="l3M-oa-qf5" secondAttribute="trailing" constant="20" symbolic="YES" id="k3b-rj-4Wv"/>
                             <constraint firstItem="l3M-oa-qf5" firstAttribute="top" secondItem="Qxx-aa-uIU" secondAttribute="bottom" constant="20" symbolic="YES" id="sOY-0S-NOC"/>
                             <constraint firstItem="cD7-Ta-bJ4" firstAttribute="top" secondItem="dcR-IE-nWw" secondAttribute="bottom" constant="20" symbolic="YES" id="x7V-b9-NOd"/>

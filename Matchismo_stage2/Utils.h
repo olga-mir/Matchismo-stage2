@@ -12,7 +12,7 @@
 
 #define UnavailableMacro(msg) __attribute__((unavailable(msg)))
 
-#define SYSASSERT(cond, msg) NSAssert(cond, @"Assert occured at %@ line: %d, with message: %@", NSStringFromSelector(_cmd), __LINE__, msg)
+#define SYSASSERT(cond, msg) NSAssert(cond, @"Assert occurred at function: %@. Line: %d. Message: %@", NSStringFromSelector(_cmd), __LINE__, msg)
 
 /*
 #define mustOverride() @throw [NSException exceptionWithName:NSInvalidArgumentException \

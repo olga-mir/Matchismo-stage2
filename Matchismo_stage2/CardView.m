@@ -18,6 +18,13 @@
   [self setNeedsDisplay];
 }
 
+- (NSString *)contents
+{
+  if (!_contents) {
+    _contents = [NSString stringWithFormat:@""];
+  }
+  return _contents;
+}
 
 - (void)setup
 {
@@ -26,21 +33,8 @@
   self.contentMode = UIViewContentModeRedraw;
 }
 
-/*
-- (void)drawRect:(CGRect)rect
-{ 
-  // create the genral form of the card: white rounded corners with black stroke
-  UIBezierPath *roundedRect = [UIBezierPath bezierPathWithRoundedRect:self.bounds cornerRadius:[self cornerRadius]];
-  [roundedRect addClip];
-  [[UIColor whiteColor] setFill];
-  [roundedRect fill];   //UIRectFill(self.bounds);
-  [[UIColor blackColor] setStroke];
-  [roundedRect stroke];
-}
-*/
-
 + (CGFloat)getAspectRatio {
-  return 0.7; // TODO - overridind static virtual method. nuts
+  return 0.7; // TODO - overriding static virtual method. nuts
 }
 
 // Virtual methods

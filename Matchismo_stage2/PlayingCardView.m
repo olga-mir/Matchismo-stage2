@@ -86,6 +86,10 @@
   }
 }
 
+- (NSString *)contents {
+  return [[self rankAsString] stringByAppendingString:self.suit];
+}
+
 #pragma mark - Card Behavior
 
 // Toggle the faceUp state and animate the change
@@ -141,7 +145,7 @@
   [roundedRect stroke];
   
   if (self.faceUp) {
-    UIImage *faceImage = [UIImage imageNamed:[NSString stringWithFormat:@"%@%@", [self rankAsString], self.suit]];
+    UIImage *faceImage = [UIImage imageNamed:[NSString stringWithFormat:@"%@%@.jpg", [self rankAsString], self.suit]];
     if (faceImage) {
       CGRect imageRect = CGRectInset(self.bounds,
                                      self.bounds.size.width * (1.0 - self.faceCardScaleFactor),
@@ -150,8 +154,9 @@
     } else {
       [self drawPips];
     }
-    
     [self drawCorners];
+  } else {
+    [[UIImage imageNamed:@"cardback.png"] drawInRect:self.bounds];
   }
 }
 

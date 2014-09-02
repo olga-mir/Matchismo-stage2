@@ -33,6 +33,9 @@
 // Deck of cards for current game. As the game goes, cards are being drawn from it.
 @property (strong, nonatomic)Deck *deck;
 
+// How many cards to start the game with. Once the game is initialized all the following games instances will start with the same number of cards
+@property (nonatomic)NSUInteger initialNumberOfCards;
+
 @end
 
 
@@ -57,21 +60,18 @@
 // and not depend on the type of cards in the deck
 - (instancetype)initWithCardCount:(NSUInteger)count usingDeck:(Deck *)deck cardsInSet:(NSUInteger)numOfCardsToMatch
 {
-  NSLog(@"CardMatchingGame.m: initWithCardCount %d", count);
-  
   self = [super init];
   
   if (self) {
-    self.deck = deck;
+    _deck = deck;
     if (![self dealCards:count]) {
-      // there was not enough cards, so the deal failed
-      self = nil; // TODO - exception?
+      self = nil;    // there was not enough cards, so the deal failed
     } else {
-      self.numOfCardsToMatch = numOfCardsToMatch;
+      _numOfCardsToMatch = numOfCardsToMatch;
+      _initialNumberOfCards = count;
     }
   }
-  self.moreMatchesAvailable = YES;
-  NSLog(@"CardMatchingGame.m: initWithCardCount completed");
+  _moreMatchesAvailable = YES; // TODO if number of cards is greater than....
   return self;
 }
 
@@ -92,24 +92,35 @@
 }
 
 
-// reset the game logic. The number of cards is defined only once in the beggining of the game
-// i.e. it is set once in the CardMatchingGame initializer
-- (void)restartGame // TODO - init functionality with the init.
+/**
+ *  Reset the game with the same configuration
+ */
+- (void)restartGame
 {
-  int cardsInGame = [self.cards count];
   [self.cards removeAllObjects];
-  [self dealCards:cardsInGame];
+  [self dealCards:self.initialNumberOfCards];
   self.score = 0;
   self.moreMatchesAvailable = YES;
 }
 
-// Getter for a card at specified index
+/**
+ *  Get a card at the given index. It might not be neceserraly a card that can be played, i.e. it can hold YES for the 'isMatched' property. It is the implementation decision to keep matched cards in the 'cards' array, but not show them to the user.
+ *
+ *  @param index index of the card in 'cards' array
+ *
+ *  @return Card from that index or nil if the index is out of bounds
+ */
 - (Card *)cardAtIndex:(NSUInteger)index
 {
   return (index < [self.cards count]) ? self.cards[index] : nil;
 }
 
-// return number of cards that are currently in the game (dealt from the deck and not taken away by matches)
+
+/**
+ *  Number of cards currently visible and availbale to pay with. In model these are the cards in the 'cards' array with 'isMatched' property set to NO
+ *
+ *  @return visible cards that are available to play
+ */
 - (NSUInteger)curNumberOfCardsInGame
 {
   NSUInteger count = 0;
@@ -120,24 +131,34 @@
   }
   return count;
 }
+/*
+- (NSUInteger)totalNumberOfCardsInGame
+{
+  return [self.cards  count];
+}
+ */
 
-// add requested number of cards from the deck to the game
-// return False if there were not enough cards in the deck.
+/**
+ *  Add more cards to the current game. If the specified amount of cards could not be added then no cardss are added to the game. That means that either numOfCardsToAdd or 0 cards had been added to the game.
+ *
+ *  @param numOfCardsToAdd number of cards to be added
+ *
+ *  @return YES if the requested number of cards was successfully added, NO - otherwise, e.g. when the deck was deplected.
+ */
 - (BOOL)addCardsToPlay:(NSUInteger)numOfCardsToAdd
 {
   NSLog(@"Adding cards to game");
-  Card *card = [self.deck drawRandomCard];
-  NSUInteger cardsAdded = 0;
   
-  while (card && (cardsAdded < numOfCardsToAdd)) {
-    [self.cards addObject:card];
-    cardsAdded++;
-    NSLog(@"Added a card");
+  if (numOfCardsToAdd > [self.deck remainingCards]) {
+    return NO; // implementation decision - if there are not enough cards in the deck then don't add any cards at all
   }
   
-  // if the loop ended because there were not enough card to deal, then return False to the caller
-  if (cardsAdded < numOfCardsToAdd) {
-    return NO;
+  for (NSUInteger i = 0; i < numOfCardsToAdd; i++) {
+    // [self.cards addObject:[self.deck drawRandomCard]];
+    // use debug code for now:
+    Card *card = [self.deck drawRandomCard];
+    [self.cards addObject:card];
+    NSLog(@"Added card: %@", card);
   }
   return YES;
 }
@@ -148,13 +169,20 @@ static const int MISMATCH_PENALTY = 2;
 static const int MATCH_BONUS = 4;
 static const int COST_TO_CHOSE = 1;
 
+// difference form regular func is that it reurn Card, that can be inspected
+- (Card *)debugWrapper_choseCardAtIndex:(NSUInteger)index;
+{
+  Card *card = [self cardAtIndex:index];
+  [self choseCardAtIndex:index];
+  return card;
+}
+
 - (void)choseCardAtIndex:(NSUInteger)index
 {
-  NSLog(@"CardMatchingGame.h: choseCardAtIndex");
   Card *card = [self cardAtIndex:index];
   int scoreForCurrentMatch = 0;
   
-  NSLog(@"Game model: chose card: %@", card);
+   NSLog(@"CardMatchingGame: choseCardAtIndex: %d, %@", index, card);
   
   if (card.isChosen) {
     // if the card was already chosen, then toggle it back to unchosen state.
@@ -247,8 +275,7 @@ static const int COST_TO_CHOSE = 1;
       NSArray *indexes = sets[i];
     
       Card *card = [cardsLeft objectAtIndex:[indexes[0] integerValue]];
-      NSArray *otherCards = [[NSArray alloc] initWithObjects:[cardsLeft objectAtIndex:[indexes[1] integerValue]],
-                                                           nil];
+      NSArray *otherCards = [[NSArray alloc] initWithObjects:[cardsLeft objectAtIndex:[indexes[1] integerValue]], nil]; // array of one card only
       if ([card match:otherCards]) {
         moreMatchesAvailable = YES;
         break;
@@ -258,6 +285,16 @@ static const int COST_TO_CHOSE = 1;
   
   NSLog(@"PREV: %d, NEXT: %d", self.moreMatchesAvailable, moreMatchesAvailable);
   self.moreMatchesAvailable = moreMatchesAvailable;
+  
+  // DEBUG log
+  if (!moreMatchesAvailable) {
+    NSLog(@"The remaining cards are:");
+    for (Card *c in self.cards) {
+      if (!c.isMatched) {
+        NSLog(@"%@", c);
+      }
+    }
+  }
   
   return;
 }

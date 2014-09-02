@@ -17,10 +17,10 @@
 @property (strong, nonatomic) NSString *filling;  // solid, striped or unfilled
 @property (strong, nonatomic) NSString *shape;    // squiggles, diamonds or ovals
 
-
 @end
 
 @implementation SetCardView
+
 
 - (void)setSelected:(BOOL)selected {
   _selected = selected;
@@ -33,6 +33,11 @@
   return self.selected;
 }
 
+- (NSString *) description
+{
+  return self.contents;
+}
+
 // designated initializer
 // it is provided that the card is the Set Card and is not checked here.
 - (instancetype)initWithFrame:(CGRect)frame withCard:(SetCard *)setCard
@@ -43,6 +48,8 @@
   
   if (self) {
     NSLog(@"initWithFrame, (Set) card = %@", setCard.contents);
+    self.contents = setCard.contents;
+    
     SYSASSERT([setCard isKindOfClass:[SetCard class]], @"Type mismatch: Set card view cannot be created without valid card of SetCard type");
     
     _rank     = setCard.rank;
@@ -135,9 +142,14 @@
 - (CGFloat)shapeHeight { return [self shapeWidth] / SET_CARD_SHAPE_ASPECT_RATIO; }
 
 
-// This function will draw one or two shapes
-// if offset == 0 there will be only one shape which be positioned exactly in the middle of self.frame
-// if offset != 0 there wiil be two shapes positioned above and below the center of the frame at distance specified by offset
+/**
+ *  Draw one or two shapes on equal distance from vertical center of the view
+    if offset == 0 there will be only one shape which be positioned exactly in the middle of self.frame
+    if offset != 0 there wiil be two shapes positioned above and below the center of the frame at distance specified by offset
+ 
+ *
+ *  @param offset offset (in percentage) from the vertical center of the view
+ */
 - (void)drawShapeWithVerticalOffset:(CGFloat)offset
 {
   [self.color setFill];
@@ -179,7 +191,11 @@
   }
 }
 
-// Fill the shape according to the 'filling' property
+/**
+ *  Fill the inside of the Set card game shape
+ *
+ *  @param path is the Bezier path representing the shape
+ */
 - (void)fillPath:(UIBezierPath *)path
 {
   if ([self.filling isEqual:@"solid"]) {

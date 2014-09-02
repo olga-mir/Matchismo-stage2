@@ -20,6 +20,4 @@
 
 - (CardView *)initWithFrame:(CGRect)frame withCard:(SetCard *)card;
 
-//- (CGFloat)cornerRadius;
-
 @end

@@ -95,7 +95,8 @@
 
 - (NSString *)description
 {
-  return [NSString stringWithFormat:@"Card contents: %@%@", [self rankAsString], self.suit];
+  //return [NSString stringWithFormat:@"Card contents: %@%@", [self rankAsString], self.suit];
+  return self.contents;
 }
 
 
