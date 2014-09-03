@@ -42,9 +42,17 @@
 
 - (void)setRank:(NSUInteger)rank {
   
-  if (rank < [PlayingCard maxRank]) {
+  if (rank <= [PlayingCard maxRank]) {
     _rank = rank;
   }
+}
+
+- (instancetype)copy
+{
+  PlayingCard *playingCardCopy = [[PlayingCard alloc] init];
+  playingCardCopy.rank = self.rank;
+  playingCardCopy.suit = self.suit;
+  return  playingCardCopy;
 }
 
 #define RANK_MATCH_SCORE 4
@@ -95,7 +103,6 @@
 
 - (NSString *)description
 {
-  //return [NSString stringWithFormat:@"Card contents: %@%@", [self rankAsString], self.suit];
   return self.contents;
 }
 

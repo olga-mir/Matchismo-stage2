@@ -40,17 +40,14 @@
 
 - (Deck *)createDeck
 {
-  NSLog(@"SetGameVC: createDeck");
   return [[SetCardDeck alloc] init];
 }
 
 - (NSUInteger)numOfCardsToMatch {
-  NSLog(@"SetGameVC: set num of cards to match 3");
   return NUMBER_OF_CARDS_TO_MATCH_IN_SET_CARD_GAME;
 }
 
 - (NSUInteger)defaultNumOfCardsInGame {
-  NSLog(@"SetGameVC: defaultNumOfCardsInGame");
   return DEFAULT_NUM_OF_CARDS_IN_SET_CARD_GAME;
 }
 

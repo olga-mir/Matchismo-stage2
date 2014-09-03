@@ -21,6 +21,7 @@
 - (CGFloat)getCardAspectRatio;
 + (CGFloat)getAspectRatio; // static virtual method? TODO - why overriding in subclass is not working!!!!!!!!!!
 - (void)setup;
+- (void)animateCardFrameChangeFromFrame:(CGRect)fromFrame toFrame:(CGRect)toFrame withDelay:(CGFloat)delay;
 
 // Virtual methods
 

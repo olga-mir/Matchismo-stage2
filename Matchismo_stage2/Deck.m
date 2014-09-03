@@ -55,5 +55,16 @@
   return [self.cards count];
 }
 
+// clone the deck
+- (instancetype)copy
+{
+  Deck *deckCopy = [[Deck alloc] init];
+  for (int i = 0; i < [self.cards count]; i++) {
+    Card *cardCopy = [self.cards[i] copy];
+    [deckCopy addCard:cardCopy];
+  }
+  return deckCopy;
+}
+
 
 @end

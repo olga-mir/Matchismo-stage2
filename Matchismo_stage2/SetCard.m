@@ -89,6 +89,15 @@
   return [NSString stringWithFormat:@"%d-%@-%@-%@", self.rank, self.color, self.filling, self.shape];
 }
 
+- (instancetype)copy
+{
+  SetCard *setCardCopy = [[SetCard alloc] init];
+  setCardCopy.rank = self.rank;
+  setCardCopy.color = self.color;
+  setCardCopy.filling = self.filling;
+  setCardCopy.shape = self.shape;
+  return setCardCopy;
+}
 
 #define POINTS_FOR_MATCH 6
 
@@ -112,16 +121,17 @@ typedef enum RULES {
   // Set is always three card game
   SYSASSERT(([otherCards count] == 2), @"The Set game is always a 3-card matching game. Number of cards provided for matching is not 3");
   
-  int score = 0;
   SetCard *card2 = [otherCards firstObject];
   SetCard *card3 = [otherCards lastObject];
   
+  int score = 0;
   rules_e setRules = 0;
+  
   // General rule, that has to be checked for every property of the Set card (number, shape, filling, color)
   // "They all have the same __property__ or they have three different __property__s"
   // in order to make a Set ALL of these rules must be satisfied
   
-  // Rule 1: They all have the same NUMBER or they have three different NAMBERs
+  // Rule 1: They all have the same NUMBER or they have three different NUMBERs
   if ( ((self.rank == card3.rank) && (card2.rank == card3.rank)) ||
        ((self.rank != card2.rank) && (self.rank != card3.rank) && (card2.rank != card3.rank)) ) {
     setRules |= NUMBER_RULE;

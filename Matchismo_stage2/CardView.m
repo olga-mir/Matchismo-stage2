@@ -37,7 +37,23 @@
   return 0.7; // TODO - overriding static virtual method. nuts
 }
 
-// Virtual methods
+
+- (void)animateCardFrameChangeFromFrame:(CGRect)fromFrame toFrame:(CGRect)toFrame withDelay:(CGFloat)delay;
+{
+  self.frame = fromFrame;
+
+  [UIView animateWithDuration:0.2f
+                        delay:delay
+                      options:UIViewAnimationOptionTransitionNone
+                   animations:^{
+                     self.frame = toFrame;
+                   }
+                   completion:NULL];
+}
+
+
+#pragma mark - Virtual Methods
+
 - (CGFloat)getCardAspectRatio
 {
   mustOverride();

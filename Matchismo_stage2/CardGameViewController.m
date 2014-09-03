@@ -19,7 +19,7 @@
 // grid of cards currently in game
 @property (strong, nonatomic) Grid *grid;
 
-// A general view that specifies the bounds of the cards area
+// A container view that specifies the bounds of the cards area
 @property (weak, nonatomic) IBOutlet UIView *cardsDisplayArea;
 @property (strong, nonatomic) NSMutableArray *cardViews; // of CardView's
 
@@ -33,7 +33,6 @@
 // TODO - not yet implemented - when gameInProgress - use KVO. don't try to do graphics when cards are all gone
 // TODO - game over. all matched or remaining cards could not be matched
 // TODO - disable user interaction while animating
-// TODO - On Set cards black corner show through
 // TODO - Deal button, score label doesn't appear on the set game screen, and when returning to the playing card game they also disappear
 
 @implementation CardGameViewController
@@ -90,8 +89,9 @@
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-  [self rePositionCards];
+  [self rearrangeCardViewsIfNeeded];
 }
+
 
 #pragma mark - Creating Card Views
 
@@ -102,51 +102,51 @@
  */
 - (void)createCardViews
 {
-  [self addViewForCardsFromIndex:0 toIndex:(self.game.curNumberOfCardsInGame - 1)];
+  [self addViewForCardsFromIndex:0 toIndex:(self.game.curNumberOfCardsInGame - 1) animateWithDelay:0];
 }
 
-- (void)addViewForCardsFromIndex:(NSUInteger)fromInd toIndex:(NSUInteger)toInd
+- (void)addViewForCardsFromIndex:(NSUInteger)fromInd toIndex:(NSUInteger)toInd animateWithDelay:(CGFloat)delay
 {
   NSLog(@"fromInd = %d, toInd = %d", fromInd, toInd);
+  //CGFloat delay = 0.1f; // delay between animating each card arrival
   
   // The grid will affect the cards size so it must be setup before constructing new CardView objects
   [self gridSetup];
   
   for (NSUInteger cardInd = fromInd; cardInd <= toInd; cardInd++) {
     
-    // Only on the first time when creating the views don't translate indexes
-    NSUInteger gridIndex = ([self.cardViews count]) ? [self translateToGameIndexFromVisibleIndex:cardInd] : cardInd;
+    NSUInteger gridIndex = [self nextAvailableVisibleIndex];
     
-    CGRect frameFinalPosition = [self setupFrameAtIndex:gridIndex];
-    //CGRect frameTempPosition = frameFinalPosition;
-    //frameTempPosition.origin = CGPointMake(500.0, 500.0);
+    CGRect frame = [self getFrameForViewAtIndex:gridIndex];
     
     Card *card = [self.game cardAtIndex:cardInd];
     SYSASSERT(card, @"Card should not be nil");
     
-    CardView *cardView = [self createCardViewWithFrame:frameFinalPosition withCard:card];
+    CardView *cardView = [self createCardViewWithFrame:frame withCard:card];
     SYSASSERT(cardView, @"CardView should not be nil");
     
     [self.cardViews addObject:cardView];
     [self.cardsDisplayArea addSubview:cardView];
-    NSLog(@"Added at the index %d: CardView - %@, Card - %@", cardInd, cardView.contents, card.contents);
-/*
     
-    [UIView transitionWithView:cardView
-                      duration:0.5
-                       options:UIViewAnimationOptionTransitionNone
-                    animations:^{
-                      cardView.frame = frameFinalPosition;
-                    }
-                    completion:^(BOOL finished){
-                      
-                    }];
-  */
+    // animate the card arrival
+    CGRect initialFrame = cardView.frame;
+    initialFrame.origin = self.dealButton.center;
+    [cardView animateCardFrameChangeFromFrame:initialFrame toFrame:cardView.frame withDelay:delay];
+    delay += 0.1f;
+    
+    NSLog(@"Added at the index %d: CardView - %@, Card - %@", cardInd, cardView.contents, card.contents);
   }
 }
 
-// Create a frame for a card at the given index, according to the current grid
-- (CGRect)setupFrameAtIndex:(int)cardInd // TODO - by reference?
+
+/**
+ *  Given a view index within the grid return the frame for this view
+ *
+ *  @param cardInd the index of the view
+ *
+ *  @return frame for this view
+ */
+- (CGRect)getFrameForViewAtIndex:(int)cardInd
 {
   NSUInteger r = cardInd / self.grid.columnCount;
   NSUInteger c = cardInd % self.grid.columnCount;
@@ -189,33 +189,41 @@
 // TODO - animate departure of old cards and arrival of new ones
 - (IBAction)touchDealButton:(id)sender
 {
-  NSLog(@"DEAL - in the main VC");
-  
   // reset the model
   [self.game restartGame];
   
   // reset the controller
   [self.cardViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
   [self.cardViews removeAllObjects];
-  
-  // this will also reset the grid
-  [self createCardViews];
+  [self createCardViews]; // this will also reset the grid
 }
 
+#define REARRANGEMENT_ANIMATION_DURATION 0.4
 
 /**
  *  UI outlet to let user request more cards to be added to the current game.
  *
- *  @param sender sender is the button that triggered this handler. It is not used.
+ *  @param sender sender is the button that triggered this handler (not used)
  */
 - (IBAction)touchDealMoreCardsButton:(UIButton *)sender
 {
   NSUInteger prevNumOfCards = [self.cardViews count];
   
-  [self.game addCardsToPlay:[self numOfCardsToMatch]];
+  BOOL cardsAdded = [self.game addCardsToPlay:[self numOfCardsToMatch]];
   
-  [self addViewForCardsFromIndex:prevNumOfCards toIndex:[self.cardViews count] + [self numOfCardsToMatch] - 1];
-  [self rePositionCards];
+  if (!cardsAdded) { // there was a problem adding more cards to the game
+    // TODO - display something to the user
+  } else {
+  
+    // The grid could change as a result of new cards addition
+    // before displaying the new cards, the eisting cards
+    // should recalculate there frames and animate the change
+    BOOL cardsWereRearranged = [self rearrangeCardViewsIfNeeded];
+    CGFloat animationDelay = cardsWereRearranged ? REARRANGEMENT_ANIMATION_DURATION : 0;
+    
+    // Now add new card views to the game
+    [self addViewForCardsFromIndex:prevNumOfCards toIndex:[self.cardViews count] + [self numOfCardsToMatch] - 1 animateWithDelay:animationDelay];
+  }
 }
 
 
@@ -264,6 +272,7 @@
   [self animateMatchOutcome];
 }
 
+#pragma mark - Process User Input
 
 /**
  *  Translate index from the game model logic which holds all the cards that ever were dealt in this game, in their original order to the grid of the visible cards only. Index in the grid is calculated from the tap gesture recogniser, to translate it to the game logic index the visible index must be offset by amount of the hidden cards upto this particular index
@@ -292,6 +301,24 @@
   NSLog(@"index translation: visibleCardIndex = %d, chosenCardIndex = %d", visibleCardIndex, chosenCardIndex);
   
   return chosenCardIndex;
+}
+
+
+/**
+ *  The index of the first available space in the grid
+ *
+ *  @return index in the grid
+ */
+- (NSUInteger)nextAvailableVisibleIndex
+{
+  NSUInteger visibleIndex = 0;
+  
+  for (int i = 0; i < [self.cardViews count]; i++) {
+    if (![self.cardViews[i] isHidden]) {
+      visibleIndex++;
+    }
+  }
+  return visibleIndex;
 }
 
 
@@ -355,18 +382,19 @@
                       cardView.hidden = YES;
                     }
                     completion:^(BOOL finished){
-                      [self rePositionCards];
+                      [self rearrangeCardViewsIfNeeded];
                     }];
     
   }
 }
 
-
 /**
  *  Recalculate the size and the position of the cards that are currently in the game. After number of cards had
  */
-- (void)rePositionCards
+- (BOOL)rearrangeCardViewsIfNeeded
 {
+  BOOL cardsWereRearranged = NO;
+  
   // re-arrange cards to take all the available screen space
   [self gridSetup];
   
@@ -380,13 +408,22 @@
     if (!cardView.isHidden) {
       
       // get the current frame new origin and size according to the grid
-      CGRect frame = [self setupFrameAtIndex:currVisibleInd];
+      CGRect frame = [self getFrameForViewAtIndex:currVisibleInd];
       
       currVisibleInd++;
       
+      // If cards need to be rearranged then at least one of them will have new origin
+      // and we need to find only one such card to determine this
+      if (!cardsWereRearranged) {
+        if ((abs(cardView.frame.origin.x - frame.origin.x) > 0.001) ||
+            (abs(cardView.frame.origin.y - frame.origin.y) > 0.001)){
+          cardsWereRearranged = YES;
+        }
+      }
+      
       // if frame has changed (both position or size) animate this change
       [UIView transitionWithView:cardView
-                        duration:0.6
+                        duration:REARRANGEMENT_ANIMATION_DURATION
                           options:UIViewAnimationOptionTransitionNone
                       animations:^{
                         cardView.frame = frame;
@@ -394,8 +431,10 @@
                       completion:nil];
     }
   }
+  return cardsWereRearranged;
 }
 
+#pragma mark - Game Over Handling
 /**
  *  Observe value for the game over indication from the model.
  *

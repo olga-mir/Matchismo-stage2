@@ -18,4 +18,6 @@
 
 - (NSUInteger)remainingCards;
 
+- (instancetype)copy;
+
 @end

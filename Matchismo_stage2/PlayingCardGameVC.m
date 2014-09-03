@@ -45,17 +45,14 @@
 
 - (Deck *)createDeck
 {
-  NSLog(@"PlayingCardGameVC: createDeck");
   return [[PlayingCardDeck alloc] init];
 }
 
 - (NSUInteger)numOfCardsToMatch {
-  NSLog(@"PlayingCardGameVC: set num of cards to match (2 for the playing card game)");
   return NUMBER_OF_CARDS_TO_MATCH_IN_PLAYING_CARD_GAME;
 }
 
 - (NSUInteger)defaultNumOfCardsInGame {
-  NSLog(@"PlayingCardGameVC: defaultNumOfCardsInGame");
   return DEFAULT_NUM_OF_CARDS_IN_PLAYING_CARD_GAME;
 }
 
