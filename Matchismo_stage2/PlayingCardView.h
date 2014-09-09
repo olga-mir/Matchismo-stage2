@@ -15,9 +15,17 @@
 
 @interface PlayingCardView : CardView
 
-- (CGFloat)getCardAspectRatio;
-
+/**
+ *  Designated initializer for the Playing card view.
+ *
+ *  @param frame frame for the view
+ *  @param card  the Playing card model. Must be of type PlayingCard
+ *
+ *  @return the view representing given card
+ */
 - (instancetype)initWithFrame:(CGRect)frame withCard:(PlayingCard *)card;
+
+- (CGFloat)getCardAspectRatio;
 
 - (CGFloat)cornerRadius;
 

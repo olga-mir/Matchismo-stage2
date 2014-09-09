@@ -44,4 +44,8 @@
  2. Corner cases 
     1. init game with not enough cards in the deck
     2. add more cards with not enough cards in the deck
+ 
+ other usefull (or not so) things that may be used in this app:
+  layoutSubviews
+  CGRectGetMidX(viewBounds)
  */

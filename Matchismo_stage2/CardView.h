@@ -21,13 +21,13 @@
 - (CGFloat)getCardAspectRatio;
 + (CGFloat)getAspectRatio; // static virtual method? TODO - why overriding in subclass is not working!!!!!!!!!!
 - (void)setup;
-- (void)animateCardFrameChangeFromFrame:(CGRect)fromFrame toFrame:(CGRect)toFrame withDelay:(CGFloat)delay;
+- (void)animateCardFrameChangeFromFrame:(CGRect)fromFrame toFrame:(CGRect)toFrame withDuration:(CGFloat)duration withDelay:(CGFloat)delay;
 
 // Virtual methods
 
 - (instancetype)initWithFrame:(CGRect)frame Card:(Card *)card;
 - (CGFloat)cornerRadius;
-- (void)selectOrDeselectCard;
+- (void)selectOrDeselectCardWithDuration:(CGFloat)duration withDelay:(CGFloat)delay;
 - (BOOL)getSelectedState;
 
 

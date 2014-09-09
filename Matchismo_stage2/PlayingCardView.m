@@ -16,6 +16,9 @@
 @property (strong, nonatomic) NSString *suit;
 @property (nonatomic) NSUInteger rank;
 
++ (NSUInteger)maxRank;
++ (NSArray *)validSuits;
+
 @end
 
 @implementation PlayingCardView
@@ -29,7 +32,7 @@
   
   if (self) {
     SYSASSERT([playingCard isKindOfClass:[PlayingCard class]], @"Type mismatch: Playing card view cannot be created without valid card of PlayingCard type");
-    [self setup];
+
     self.rank = playingCard.rank;
     self.suit = playingCard.suit;
   }
@@ -43,7 +46,19 @@
 
 
 #pragma mark - Properties
-// TODO  - add validation code
+
++ (NSArray *)validSuits
+{
+  return @[@"♠", @"♣", @"♥", @"♦"];
+}
+
++ (NSArray *)rankStrings
+{
+  return @[@"?", @"A", @"2", @"3", @"4", @"5", @"6", @"7", @"8", @"9", @"10", @"J", @"Q", @"K"];
+}
+
++ (NSUInteger) maxRank {return [[self rankStrings] count] - 1;}
+
 
 @synthesize faceCardScaleFactor = _faceCardScaleFactor;
 
@@ -55,19 +70,26 @@
   return _faceCardScaleFactor;
 }
 
-- (void) setFaceCardScaleFactor:(CGFloat)faceCardScaleFactor {
+- (void) setFaceCardScaleFactor:(CGFloat)faceCardScaleFactor
+{
+  SYSASSERT(((faceCardScaleFactor) > 0 && (faceCardScaleFactor <= 1)), ([NSString stringWithFormat:@"Invalid faceCardScaleFactor, must be in range (0, 1], but provided %f", faceCardScaleFactor]));
+  
   _faceCardScaleFactor = faceCardScaleFactor;
   [self setNeedsDisplay];
 }
 
 - (void) setRank:(NSUInteger) rank
 {
+  SYSASSERT(((rank > 0) && (rank <= [PlayingCardView maxRank])), ([NSString stringWithFormat:@"Invalid rank: %d", rank]));
+  
   _rank = rank;
   [self setNeedsDisplay];
 }
 
 - (void) setSuit:(NSString *)suit
 {
+  SYSASSERT(([[PlayingCardView validSuits] containsObject:suit]), ([NSString stringWithFormat:@"Invalid suit: %@", suit]));
+  
   _suit = suit;
   [self setNeedsDisplay];
 }
@@ -86,31 +108,53 @@
   }
 }
 
-- (NSString *)contents {
+- (NSString *)contents
+{
   return [[self rankAsString] stringByAppendingString:self.suit];
 }
 
 #pragma mark - Card Behavior
 
-// Toggle the faceUp state and animate the change
-- (void) selectOrDeselectCard
+/**
+ *  Toggle the current card state. Animate the change with the specified duration
+ *
+ *  @param duration animation duration in sec
+ */
+- (void)selectOrDeselectCardWithDuration:(CGFloat)duration withDelay:(CGFloat)delay
 {
   UIViewAnimationOptions options = (self.faceUp) ? UIViewAnimationOptionTransitionFlipFromLeft : UIViewAnimationOptionTransitionFlipFromRight;
   
   [UIView transitionWithView:self
-                    duration:0.6
+                    duration:duration
                      options:options
                   animations:^{
+                    [UIView setAnimationDelay:delay];
                     self.faceUp = !self.faceUp;
                   }
                   completion:NULL];
+   
+/*
+  [UIView animateWithDuration:duration
+                        delay:delay
+                      options:UIViewAnimationOptionAllowAnimatedContent | options
+                   animations:^{
+                     self.faceUp = !self.faceUp;
+                   }
+                   completion:NULL];
+  */
 }
 
 
 #pragma mark - Drawing
 
+/**
+ *  Get the string representation of the card's rank value
+ *
+ *  @return the string representing the card's rank
+ */
 - (NSString *)rankAsString
-{ // TODO  - add validation code
+{
+  // self.rank is always a valid number. The data integrety verified at the setter.
   return @[@"?", @"A", @"2", @"3", @"4", @"5", @"6", @"7", @"8", @"9", @"10", @"J", @"Q", @"K"][self.rank];
 }
 
@@ -136,11 +180,10 @@
 
 - (void)drawRect:(CGRect)rect
 {
-  //[super drawRect:rect];
   UIBezierPath *roundedRect = [UIBezierPath bezierPathWithRoundedRect:self.bounds cornerRadius:[self cornerRadius]];
   [roundedRect addClip];
   [[UIColor whiteColor] setFill];
-  [roundedRect fill];   //UIRectFill(self.bounds);
+  [roundedRect fill];
   [[UIColor blackColor] setStroke];
   [roundedRect stroke];
   

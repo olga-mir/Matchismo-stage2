@@ -87,13 +87,25 @@
   [self.game addObserver:self forKeyPath:@"moreMatchesAvailable" options:NSKeyValueObservingOptionNew context:NULL];
 }
 
+/**
+ *  Adjust the app presentation to the device new orientation
+ *
+ *  @param fromInterfaceOrientation previous device orientation
+ */
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
+  NSLog(@"didRotateFromInterfaceOrientation");
   [self rearrangeCardViewsIfNeeded];
 }
 
 
 #pragma mark - Creating Card Views
+
+// Animation durations
+#define DEFAULT_ANIMATION_DURATION 0.3
+#define REARRANGEMENT_ANIMATION_DURATION                    DEFAULT_ANIMATION_DURATION
+#define CARD_SELECTION_OR_DESELECTION_ANIMATION_DURATION    0.6
+#define CARD_ARRIVAL_ON_DEAL_ANIMATION_DURATION             (DEFAULT_ANIMATION_DURATION/2)
 
 #define CARD_VIEW_SCALE_FACTOR 0.97
 
@@ -108,7 +120,6 @@
 - (void)addViewForCardsFromIndex:(NSUInteger)fromInd toIndex:(NSUInteger)toInd animateWithDelay:(CGFloat)delay
 {
   NSLog(@"fromInd = %d, toInd = %d", fromInd, toInd);
-  //CGFloat delay = 0.1f; // delay between animating each card arrival
   
   // The grid will affect the cards size so it must be setup before constructing new CardView objects
   [self gridSetup];
@@ -130,8 +141,8 @@
     
     // animate the card arrival
     CGRect initialFrame = cardView.frame;
-    initialFrame.origin = self.dealButton.center;
-    [cardView animateCardFrameChangeFromFrame:initialFrame toFrame:cardView.frame withDelay:delay];
+    initialFrame.origin = self.dealButton.center; // position is approximate
+    [cardView animateCardFrameChangeFromFrame:initialFrame toFrame:cardView.frame withDuration:CARD_ARRIVAL_ON_DEAL_ANIMATION_DURATION withDelay:delay];
     delay += 0.1f;
     
     NSLog(@"Added at the index %d: CardView - %@, Card - %@", cardInd, cardView.contents, card.contents);
@@ -146,7 +157,7 @@
  *
  *  @return frame for this view
  */
-- (CGRect)getFrameForViewAtIndex:(int)cardInd
+- (CGRect)getFrameForViewAtIndex:(int)cardInd // TODO - replace with transform?
 {
   NSUInteger r = cardInd / self.grid.columnCount;
   NSUInteger c = cardInd % self.grid.columnCount;
@@ -197,8 +208,6 @@
   [self.cardViews removeAllObjects];
   [self createCardViews]; // this will also reset the grid
 }
-
-#define REARRANGEMENT_ANIMATION_DURATION 0.4
 
 /**
  *  UI outlet to let user request more cards to be added to the current game.
@@ -252,15 +261,13 @@
 
   // Change the card view appearance.
   // It should flip over for the Playing card view or make a selected/de-selected appearance for the Set card
-  [cardView selectOrDeselectCard];
+  [cardView selectOrDeselectCardWithDuration:CARD_SELECTION_OR_DESELECTION_ANIMATION_DURATION withDelay:0];
   
   // Notify the model about the user's selection and perform the game logic
   //[self.game choseCardAtIndex:chosenCardIndex];
   Card *card = [self.game debugWrapper_choseCardAtIndex:chosenCardIndex];
-  if (![cardView.contents isEqual:card.contents]) {
-    NSString *msg = [NSString stringWithFormat:@"Inconsistensy in Model and View indexes! Index: chosenCardIndex, View: %@, Model: %@", cardView.contents, card.contents];
-    SYSASSERT(NO, msg);
-  }
+
+  SYSASSERT(([cardView.contents isEqual:card.contents]), ([NSString stringWithFormat:@"Inconsistensy in Model and View indexes! Index: chosenCardIndex, View: %@, Model: %@", cardView.contents, card.contents]));
   
   // Show the result of this interaction to the user.
   // Possible results:
@@ -269,7 +276,7 @@
   // 2. There was a match => remove cards, update score, reposition the remaining cards
   // 3. There was no match => de-select chosen cards or flip them over to face down
 
-  [self animateMatchOutcome];
+  [self animateCurrentStepOutcome];
 }
 
 #pragma mark - Process User Input
@@ -331,7 +338,7 @@
      b) the cards match => the both cards should dissappear and the rest of the cards must be moved to utilize the space efficiently
 
  */
-- (void)animateMatchOutcome
+- (void)animateCurrentStepOutcome
 {
   // First find the views that need to change appearance then animate the appropriate change
   NSMutableArray *cardsToHide     = [[NSMutableArray alloc] init];
@@ -358,7 +365,9 @@
   }
   
   // Update the selected states of the cards that changed their state in this cycle
-  [cardsToDeselect makeObjectsPerformSelector:@selector(selectOrDeselectCard)];
+  for (CardView *card in cardsToDeselect) {
+    [card selectOrDeselectCardWithDuration:CARD_SELECTION_OR_DESELECTION_ANIMATION_DURATION withDelay:CARD_SELECTION_OR_DESELECTION_ANIMATION_DURATION];
+  }
   
   // hide the cards and reposition the remaining if needed
   if ([cardsToHide count]) {

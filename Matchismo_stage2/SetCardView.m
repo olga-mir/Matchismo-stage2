@@ -38,8 +38,14 @@
   return self.contents;
 }
 
-// designated initializer
-// it is provided that the card is the Set Card and is not checked here.
+/**
+ *  Designated initializer. Takes the Set card provided and a frame and creates the view that represents this Set card. The card must be of type Set card, otherwise assertion is fired.
+ *
+ *  @param frame   view's frame
+ *  @param setCard Set card to represent
+ *
+ *  @return the view representing given Set card
+ */
 - (instancetype)initWithFrame:(CGRect)frame withCard:(SetCard *)setCard
 {
   SYSASSERT([setCard isKindOfClass:[SetCard class]], @"Type mismatch: Set card view cannot be created without valid card of Set type");
@@ -47,7 +53,6 @@
   self = [super initWithFrame:frame];
   
   if (self) {
-    NSLog(@"initWithFrame, (Set) card = %@", setCard.contents);
     self.contents = setCard.contents;
     
     SYSASSERT([setCard isKindOfClass:[SetCard class]], @"Type mismatch: Set card view cannot be created without valid card of SetCard type");
@@ -64,8 +69,6 @@
       _color = [UIColor purpleColor];
     else
       SYSASSERT(NO, @"Invalid Color");
-    
-    [self setup];  // setup graphic properties
   }
   return self;
 }
@@ -77,7 +80,7 @@
 
 #pragma mark - Behavior
 
-- (void)selectOrDeselectCard
+- (void)selectOrDeselectCardWithDuration:(CGFloat)duration withDelay:(CGFloat)delay
 {
   // When dealt the set cards are always face up, so when card is selected
   // it must be highlighted to make the selected look
@@ -104,12 +107,11 @@
 
 - (void)drawRect:(CGRect)rect
 {
-  //[super drawRect:rect]; - TODO - move the roundedn rect to the base class
   UIBezierPath *roundedRect = [UIBezierPath bezierPathWithRoundedRect:self.bounds cornerRadius:[self cornerRadius]];
   [roundedRect addClip];
   [[UIColor whiteColor] setFill];
-  [roundedRect fill];   //UIRectFill(self.bounds);
-
+  [roundedRect fill];
+  
   if (self.selected) {
     [[UIColor greenColor] setStroke];
     roundedRect.lineWidth = 6.0;
@@ -211,8 +213,7 @@
     path.lineWidth = 1.0;
     [path stroke];
   } else {
-    NSString *errMessage = [NSString stringWithFormat:@"Invalid filling type, %@", self.filling];
-    SYSASSERT(NO, errMessage);
+    SYSASSERT(NO, ([NSString stringWithFormat:@"Invalid filling type, %@", self.filling]));
   }
   
 }
@@ -236,8 +237,6 @@
 
 - (UIBezierPath *)drawDiamondInRect:(CGRect)rect
 {
-  //rect.size.width = rect.size.height; // quick check
-  //UIBezierPath *diamondPath = [UIBezierPath bezierPathWithOvalInRect:rect];
   UIBezierPath *diamondPath = [[UIBezierPath alloc] init];
   
   CGFloat halfWidth  = rect.size.width  / 2.0;

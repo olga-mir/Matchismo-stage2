@@ -12,6 +12,16 @@
 
 @implementation CardView
 
+- (instancetype)initWithFrame:(CGRect)frame
+{
+  self = [super initWithFrame:frame];
+  
+  if (self) {
+    [self setup];
+  }
+  return self;
+}
+
 - (void) setFaceUp:(BOOL)faceUp
 {
   _faceUp = faceUp;
@@ -28,21 +38,29 @@
 
 - (void)setup
 {
-  self.backgroundColor = nil; // can be also [UIColor clearColor] - it is only a style thing
+  self.backgroundColor = nil;
   self.opaque = NO;
   self.contentMode = UIViewContentModeRedraw;
+  self.clearsContextBeforeDrawing = NO;
 }
 
 + (CGFloat)getAspectRatio {
   return 0.7; // TODO - overriding static virtual method. nuts
 }
 
-
-- (void)animateCardFrameChangeFromFrame:(CGRect)fromFrame toFrame:(CGRect)toFrame withDelay:(CGFloat)delay;
+/**
+ *  Animate the change in the frame with required duration and delay
+ *
+ *  @param fromFrame initial frame for animation
+ *  @param toFrame   the final frame
+ *  @param duration  animation duration (in sec)
+ *  @param delay     delay before starting animation (in sec)
+ */
+- (void)animateCardFrameChangeFromFrame:(CGRect)fromFrame toFrame:(CGRect)toFrame withDuration:(CGFloat)duration withDelay:(CGFloat)delay;
 {
   self.frame = fromFrame;
 
-  [UIView animateWithDuration:0.2f
+  [UIView animateWithDuration:duration
                         delay:delay
                       options:UIViewAnimationOptionTransitionNone
                    animations:^{
@@ -69,7 +87,7 @@
   mustOverride();
 }
 
-- (void)selectOrDeselectCard
+- (void)selectOrDeselectCardWithDuration:(CGFloat)duration withDelay:(CGFloat)delay;
 {
   mustOverride();
 }

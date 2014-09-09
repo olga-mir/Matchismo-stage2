@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="5056" systemVersion="12E3067" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="le1-OO-pLM">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="5056" systemVersion="12F45" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="le1-OO-pLM">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
     </dependencies>
@@ -17,7 +17,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8qO-DX-cQu">
-                                <rect key="frame" x="20" y="28" width="280" height="445"/>
+                                <rect key="frame" x="22" y="28" width="280" height="445"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
@@ -51,21 +51,20 @@
                         </subviews>
                         <color key="backgroundColor" red="0.0" green="0.50196081400000003" blue="0.25098040700000002" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
-                            <constraint firstAttribute="trailing" secondItem="8qO-DX-cQu" secondAttribute="trailing" constant="20" symbolic="YES" id="3Kn-8Q-aaN"/>
-                            <constraint firstItem="FGL-PC-194" firstAttribute="top" secondItem="8qO-DX-cQu" secondAttribute="bottom" constant="8" symbolic="YES" id="5Yb-QY-2Gk"/>
-                            <constraint firstItem="8qO-DX-cQu" firstAttribute="centerX" secondItem="FGL-PC-194" secondAttribute="centerX" constant="-0.5" id="Lra-JW-lSh"/>
                             <constraint firstItem="Jg4-tC-6h0" firstAttribute="leading" secondItem="JCE-hz-iuD" secondAttribute="leading" constant="20" symbolic="YES" id="MoB-8v-6Rd"/>
                             <constraint firstItem="E2Q-ia-jnQ" firstAttribute="top" secondItem="Jg4-tC-6h0" secondAttribute="bottom" constant="20" symbolic="YES" id="Pab-aA-OTW"/>
+                            <constraint firstItem="FGL-PC-194" firstAttribute="centerX" secondItem="JCE-hz-iuD" secondAttribute="centerX" id="PeN-zv-HLE"/>
                             <constraint firstAttribute="trailing" secondItem="o3O-Zq-KP0" secondAttribute="trailing" constant="20" symbolic="YES" id="aWF-ez-L2E"/>
-                            <constraint firstItem="8qO-DX-cQu" firstAttribute="leading" secondItem="JCE-hz-iuD" secondAttribute="leading" constant="20" symbolic="YES" id="cvg-1K-8Ei"/>
+                            <constraint firstItem="8qO-DX-cQu" firstAttribute="top" secondItem="klL-g6-oAb" secondAttribute="bottom" constant="8" id="bhh-yT-gYB"/>
+                            <constraint firstItem="8qO-DX-cQu" firstAttribute="leading" secondItem="JCE-hz-iuD" secondAttribute="leading" constant="22" id="eAI-mO-yTO"/>
                             <constraint firstItem="E2Q-ia-jnQ" firstAttribute="top" secondItem="FGL-PC-194" secondAttribute="bottom" constant="20" symbolic="YES" id="hL5-MM-GgG"/>
+                            <constraint firstAttribute="trailing" secondItem="8qO-DX-cQu" secondAttribute="trailing" constant="18" id="keA-RF-7Es"/>
+                            <constraint firstItem="FGL-PC-194" firstAttribute="top" secondItem="8qO-DX-cQu" secondAttribute="bottom" constant="8" symbolic="YES" id="mif-OC-3aJ"/>
                             <constraint firstItem="E2Q-ia-jnQ" firstAttribute="top" secondItem="o3O-Zq-KP0" secondAttribute="bottom" constant="20" symbolic="YES" id="o3L-hR-iKn"/>
-                            <constraint firstItem="8qO-DX-cQu" firstAttribute="top" secondItem="klL-g6-oAb" secondAttribute="bottom" constant="20" symbolic="YES" id="xRr-7X-DQB"/>
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="Playing Card Game" id="V73-Pt-DAu"/>
                     <connections>
-                        <outlet property="CardsDisplayArea" destination="8qO-DX-cQu" id="HH1-bu-Hd4"/>
                         <outlet property="cardsDisplayArea" destination="8qO-DX-cQu" id="2cG-vl-43a"/>
                         <outlet property="dealButton" destination="o3O-Zq-KP0" id="BQF-ND-qR4"/>
                         <outlet property="dealMoreCardsButton" destination="FGL-PC-194" id="xcA-Qq-AiF"/>
@@ -158,7 +157,6 @@
                     </view>
                     <tabBarItem key="tabBarItem" title="Set Card Game" id="cnh-In-JvC"/>
                     <connections>
-                        <outlet property="CardsDisplayArea" destination="l3M-oa-qf5" id="yli-Ag-NBQ"/>
                         <outlet property="cardsDisplayArea" destination="l3M-oa-qf5" id="3YL-m5-J32"/>
                         <outlet property="dealButton" destination="dcR-IE-nWw" id="MIX-6H-LuR"/>
                         <outlet property="dealMoreCardsButton" destination="gjF-qH-BIv" id="0c3-2b-fK1"/>
