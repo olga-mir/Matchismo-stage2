@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Olga. All rights reserved.
 //
 
-#import "cardGameViewController.h"
+#import "CardGameViewController.h"
 
 @interface PlayingCardGameVC : CardGameViewController
 

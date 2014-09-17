@@ -61,11 +61,11 @@
     _filling  = setCard.filling;
     _shape    = setCard.shape;
     
-    if ([setCard.color isEqual:@"red"])
+    if ([setCard.color isEqualToString:@"red"])
       _color = [UIColor redColor];
-    else if ([setCard.color isEqual:@"green"])
+    else if ([setCard.color isEqualToString:@"green"])
       _color = [UIColor greenColor];
-    else if ([setCard.color isEqual:@"purple"])
+    else if ([setCard.color isEqualToString:@"purple"])
       _color = [UIColor purpleColor];
     else
       SYSASSERT(NO, @"Invalid Color");
@@ -80,11 +80,15 @@
 
 #pragma mark - Behavior
 
-- (void)selectOrDeselectCardWithDuration:(CGFloat)duration withDelay:(CGFloat)delay
+- (void)toggleSelectedState
 {
-  // When dealt the set cards are always face up, so when card is selected
+  // When dealt the Set cards are always face up, so when card is selected
   // it must be highlighted to make the selected look
   self.selected = !self.selected;
+
+  // it's a bit of cheating, since the actual selection/deselection will occur in the next drawing cycle. But for the purposes of this app it is good enough
+  NSString *notificationName = (self.selected) ? CARD_SELECTION_COMPLETED_NOTIFICATION : CARD_DESELECTION_COMPLETED_NOTIFICATION;
+  [[NSNotificationCenter defaultCenter] postNotificationName:notificationName object:self];
 }
 
 #pragma mark - Drawing

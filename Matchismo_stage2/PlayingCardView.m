@@ -99,15 +99,6 @@
   return self.faceUp;
 }
 
-- (void) pinch:(UIPinchGestureRecognizer *)gesture
-{
-  if ((gesture.state == UIGestureRecognizerStateChanged) ||
-      (gesture.state == UIGestureRecognizerStateEnded)) {
-    self.faceCardScaleFactor *= gesture.scale;
-    gesture.scale = 1.0; // reset the gesture scale
-  }
-}
-
 - (NSString *)contents
 {
   return [[self rankAsString] stringByAppendingString:self.suit];
@@ -115,33 +106,23 @@
 
 #pragma mark - Card Behavior
 
-/**
- *  Toggle the current card state. Animate the change with the specified duration
- *
- *  @param duration animation duration in sec
- */
-- (void)selectOrDeselectCardWithDuration:(CGFloat)duration withDelay:(CGFloat)delay
+- (void)toggleSelectedState
 {
-  UIViewAnimationOptions options = (self.faceUp) ? UIViewAnimationOptionTransitionFlipFromLeft : UIViewAnimationOptionTransitionFlipFromRight;
-  
   [UIView transitionWithView:self
-                    duration:duration
-                     options:options
+                    duration:0.3
+                     options:((self.faceUp) ? UIViewAnimationOptionTransitionFlipFromLeft : UIViewAnimationOptionTransitionFlipFromRight)
                   animations:^{
-                    [UIView setAnimationDelay:delay];
                     self.faceUp = !self.faceUp;
                   }
-                  completion:NULL];
-   
-/*
-  [UIView animateWithDuration:duration
-                        delay:delay
-                      options:UIViewAnimationOptionAllowAnimatedContent | options
-                   animations:^{
-                     self.faceUp = !self.faceUp;
-                   }
-                   completion:NULL];
-  */
+                  completion:^(BOOL isFinished){
+                    if (isFinished) {
+                      NSString *notificationName = (self.faceUp) ? CARD_SELECTION_COMPLETED_NOTIFICATION : CARD_DESELECTION_COMPLETED_NOTIFICATION;
+                      NSLog(@"Posting notification: %@", notificationName);
+                      [[NSNotificationCenter defaultCenter] postNotificationName:notificationName object:self];
+                      NSLog(@"Posted notification: %@", notificationName);
+                    }
+                  }
+   ];
 }
 
 

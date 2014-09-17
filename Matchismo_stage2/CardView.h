@@ -12,7 +12,7 @@
 
 @interface CardView : UIView
 
-@property (nonatomic) BOOL faceUp;
+@property (nonatomic, getter = isFaceUp) BOOL faceUp;
 
 @property (nonatomic) CGFloat faceCardScaleFactor;
 
@@ -23,12 +23,16 @@
 - (void)setup;
 - (void)animateCardFrameChangeFromFrame:(CGRect)fromFrame toFrame:(CGRect)toFrame withDuration:(CGFloat)duration withDelay:(CGFloat)delay;
 
-// Virtual methods
 
+#define CARD_SELECTION_COMPLETED_NOTIFICATION     @"CardSelectionCompletedNotification"
+#define CARD_DESELECTION_COMPLETED_NOTIFICATION   @"CardDeselectionCompletedNotification"
+#define CARD_REMOVAL_COMPLETED_NOTIFICATION       @"CardRemovalCompletedNotification"
+
+
+// Virtual methods
 - (instancetype)initWithFrame:(CGRect)frame Card:(Card *)card;
 - (CGFloat)cornerRadius;
-- (void)selectOrDeselectCardWithDuration:(CGFloat)duration withDelay:(CGFloat)delay;
 - (BOOL)getSelectedState;
-
+- (void)toggleSelectedState;
 
 @end

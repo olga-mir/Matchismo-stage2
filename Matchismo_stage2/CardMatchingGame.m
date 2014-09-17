@@ -282,8 +282,9 @@ static const int COST_TO_CHOSE = 1;
   if ([cardsLeft count] > 4) { // more than 4 - there is definitely match, the value of self.moreMatchesAvailable unchanged
     return;
   }
-  if ([cardsLeft count] == 0) {
+  if (([cardsLeft count] == 0) || ([cardsLeft count] == 1)) {
     self.moreMatchesAvailable = NO;
+    NSLog(@"Zero or more cards. game over");
     return;
   }
   
@@ -298,14 +299,14 @@ static const int COST_TO_CHOSE = 1;
   } else {  // then 4 left
   
     // otherwise there are 4 cards left - try to find a match among them
-    NSArray *sets = [[NSArray alloc] initWithObjects:@[@0,@1], @[@0, @2], @[@0,@3], @[@1,@2], @[@2, @3], @[@2,@3],nil];
+    NSArray *sets = [[NSArray alloc] initWithObjects:@[@0, @1], @[@0, @2], @[@0, @3], @[@1, @2], @[@1, @3], @[@2, @3],nil];
   
     for (int i = 0; i < [sets count]; i++) {
       NSArray *indexes = sets[i];
     
       Card *card = [cardsLeft objectAtIndex:[indexes[0] integerValue]];
       NSArray *otherCards = [[NSArray alloc] initWithObjects:[cardsLeft objectAtIndex:[indexes[1] integerValue]], nil]; // array of one card only
-      if ([card match:otherCards]) {
+      if ([card match:otherCards] > 0) {
         moreMatchesAvailable = YES;
         break;
       }

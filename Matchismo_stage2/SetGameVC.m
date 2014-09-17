@@ -19,20 +19,6 @@
 @implementation SetGameVC
 
 
-- (void)viewDidLoad
-{
-  NSLog(@"\n\nSetCardGameVC: viewDidLoad");
-  
-  [super viewDidLoad];
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
-
 #pragma mark - Virtual Methods Implementation
 
 #define DEFAULT_NUM_OF_CARDS_IN_SET_CARD_GAME 12

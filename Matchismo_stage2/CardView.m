@@ -87,12 +87,12 @@
   mustOverride();
 }
 
-- (void)selectOrDeselectCardWithDuration:(CGFloat)duration withDelay:(CGFloat)delay;
+- (BOOL)getSelectedState
 {
   mustOverride();
 }
 
-- (BOOL)getSelectedState
+- (void)toggleSelectedState
 {
   mustOverride();
 }
