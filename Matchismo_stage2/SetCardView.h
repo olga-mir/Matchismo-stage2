@@ -11,13 +11,22 @@
 
 @interface SetCardView : CardView
 
-// Set cards are always faceup. (Cards that are not dealt, don't have a View
-// associated with it, so from the View stand point the Set card is always faceUp
-// However in face up state it can be in selected or not-selected state
+
+/**
+ *  Selected state of a card. Set cards are always "face Up". Cards that are not dealt from the deck have no view associated with it, so from the View's standpoint the Set card is always face up. The actual state for Set card is either 'selected' or 'not selected'
+ */
 @property (nonatomic, getter = isSelected) BOOL selected;
 
-- (CGFloat)getCardAspectRatio;
-
+/**
+ *  Designated initializer
+ *
+ *  @param frame view's frame
+ *  @param card  the model card to be presented by this view object
+ *
+ *  @return the instantiated object, nil in case of error
+ */
 - (CardView *)initWithFrame:(CGRect)frame withCard:(SetCard *)card;
+
++ (CGFloat)getCardAspectRatio;
 
 @end

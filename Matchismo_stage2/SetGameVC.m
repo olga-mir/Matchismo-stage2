@@ -53,4 +53,9 @@
 }
 
 
+- (CGFloat)getCardAspectRatio
+{
+  return [SetCardView getCardAspectRatio];
+}
+
 @end

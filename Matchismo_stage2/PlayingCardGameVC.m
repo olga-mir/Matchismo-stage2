@@ -53,4 +53,9 @@
   return playingCardView;
 }
 
+- (CGFloat)getCardAspectRatio
+{
+  return [PlayingCardView getCardAspectRatio];
+}
+
 @end

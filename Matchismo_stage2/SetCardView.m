@@ -21,8 +21,17 @@
 
 @implementation SetCardView
 
+#define PLAYING_CARD_ASPECT_RATIO 0.75
 
-- (void)setSelected:(BOOL)selected {
++ (CGFloat)getCardAspectRatio
+{
+  return PLAYING_CARD_ASPECT_RATIO;
+}
+
+#pragma mark - Properties
+
+- (void)setSelected:(BOOL)selected
+{
   _selected = selected;
   [self setNeedsDisplay];
 }
@@ -91,16 +100,10 @@
   [[NSNotificationCenter defaultCenter] postNotificationName:notificationName object:self];
 }
 
+
 #pragma mark - Drawing
 
 #define CORNER_RADIUS 12.0
-#define CARD_ASPECT_RATIO 0.75
-
-- (CGFloat)getCardAspectRatio
-{
-  NSLog(@"SET CARD getCardAspectRatio");
-  return CARD_ASPECT_RATIO;
-}
 
 #define VERTICAL_OFFSET1_PERCENTAGE 0.1
 #define VERTICAL_OFFSET2_PERCENTAGE 0.25

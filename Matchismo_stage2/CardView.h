@@ -18,8 +18,6 @@
 
 @property (strong, nonatomic)NSString *contents;
 
-- (CGFloat)getCardAspectRatio;
-+ (CGFloat)getAspectRatio; // static virtual method? TODO - why overriding in subclass is not working!!!!!!!!!!
 - (void)setup;
 - (void)animateCardFrameChangeFromFrame:(CGRect)fromFrame toFrame:(CGRect)toFrame withDuration:(CGFloat)duration withDelay:(CGFloat)delay;
 

@@ -26,8 +26,8 @@
  */
 - (instancetype)initWithFrame:(CGRect)frame withCard:(PlayingCard *)card;
 
-- (CGFloat)getCardAspectRatio;
-
 - (CGFloat)cornerRadius;
+
++ (CGFloat)getCardAspectRatio;
 
 @end

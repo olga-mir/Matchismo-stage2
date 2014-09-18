@@ -12,15 +12,7 @@
 
 @implementation CardView
 
-- (instancetype)initWithFrame:(CGRect)frame
-{
-  self = [super initWithFrame:frame];
-  
-  if (self) {
-    [self setup];
-  }
-  return self;
-}
+#pragma mark - Properties
 
 - (void) setFaceUp:(BOOL)faceUp
 {
@@ -36,6 +28,22 @@
   return _contents;
 }
 
+#pragma mark - Init
+
+- (instancetype)initWithFrame:(CGRect)frame
+{
+  self = [super initWithFrame:frame];
+  
+  if (self) {
+    [self setup];
+  }
+  return self;
+}
+
+
+/**
+ *  setup graphic properties
+ */
 - (void)setup
 {
   self.backgroundColor = nil;
@@ -44,9 +52,6 @@
   self.clearsContextBeforeDrawing = NO;
 }
 
-+ (CGFloat)getAspectRatio {
-  return 0.7; // TODO - overriding static virtual method. nuts
-}
 
 /**
  *  Animate the change in the frame with required duration and delay
@@ -71,11 +76,6 @@
 
 
 #pragma mark - Virtual Methods
-
-- (CGFloat)getCardAspectRatio
-{
-  mustOverride();
-}
 
 - (instancetype)initWithFrame:(CGRect)frame Card:(Card *)card
 {

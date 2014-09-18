@@ -45,6 +45,17 @@
   NSMutableArray *g_cardsToRemove;
 }
 
+#pragma mark - Defines
+
+// Animation durations for possible animations
+#define DEFAULT_ANIMATION_DURATION 0.3
+#define REARRANGEMENT_ANIMATION_DURATION                    DEFAULT_ANIMATION_DURATION
+#define CARD_SELECTION_OR_DESELECTION_ANIMATION_DURATION    0.6
+#define CARD_ARRIVAL_ON_DEAL_ANIMATION_DURATION             (DEFAULT_ANIMATION_DURATION/2)
+
+// Defines small scaling of the card view frame relatevely to its grid cell to provide small spacing between the cards
+#define CARD_VIEW_SCALE_FACTOR 0.97
+
 
 #pragma mark - Properties
 
@@ -89,6 +100,10 @@
   
   self.cardsDisplayArea.userInteractionEnabled = YES;
   
+  // Aspect ratio is constant througt the game. Other grid inputs are geometry dependend, so they are set in viewDidLayoutSubviews
+  self.grid.cellAspectRatio = [self getCardAspectRatio];
+  
+  // Auxilary data structures used to process and animate each step in the game
   g_cardsToDeselect = [NSMutableArray new];
   g_cardsToRemove   = [NSMutableArray new];
 }
@@ -109,25 +124,31 @@
   }
 }
 
-#pragma mark - Creating Card Views
+#pragma mark - Setup and Reset Methods
 
-// Animation durations
-#define DEFAULT_ANIMATION_DURATION 0.3
-#define REARRANGEMENT_ANIMATION_DURATION                    DEFAULT_ANIMATION_DURATION
-#define CARD_SELECTION_OR_DESELECTION_ANIMATION_DURATION    0.6
-#define CARD_ARRIVAL_ON_DEAL_ANIMATION_DURATION             (DEFAULT_ANIMATION_DURATION/2)
-
-#define CARD_VIEW_SCALE_FACTOR 0.97
-
+/**
+ *  Reset the whole game both model and controller. Start a new game
+ */
+- (void) reset
+{
+  // reset the model
+  [self.game restartGame];
+  
+  // reset the controller
+  [self.cardViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+  [self.cardViews removeAllObjects];
+  [self createCardViews]; // this will also reset the grid
+}
 
 /**
  *  Setup the grid inputs. Grid is based on 3 inputs: size, aspect ration and number of cells. During the game any of this can change and therefore the grid should be updated in the appropriate places in the code. For example card removal due to match, adding more cards.
  */
 - (void)gridSetup
 {
+  SYSASSERT((self.grid.cellAspectRatio != 0), @"Grid cell aspect ratio must be set and different from 0");
+  
   self.grid.size = self.cardsDisplayArea.frame.size;
   self.grid.minimumNumberOfCells = [self.game curNumberOfCardsInGame];
-  self.grid.cellAspectRatio = [CardView getAspectRatio];
   
   SYSASSERT(self.grid.inputsAreValid, @"Grid inputs are invalid");
 }
@@ -141,97 +162,14 @@
   [self addViewsForCardsFromIndex:0 toIndex:(self.game.curNumberOfCardsInGame - 1) animateWithDelay:0];
 }
 
-/**
- *  Add views of type CardView to the curent game. This method is called after the cards had been added to the game in the model.
- *
- *  @param fromInd the first index in the grid to place the first of the new CardView's
- *  @param toInd   the last index in the grid to place the last of the new CardView's
- *  @param delay   delay for animating the card arrival on screen
- */
-- (void)addViewsForCardsFromIndex:(NSUInteger)fromInd toIndex:(NSUInteger)toInd animateWithDelay:(CGFloat)delay
-{
-  NSLog(@"fromInd = %d, toInd = %d", fromInd, toInd);
-  
-  // The grid will affect the cards size so it must be setup before constructing new CardView objects
-  [self gridSetup];
-  
-  for (NSUInteger cardInd = fromInd; cardInd <= toInd; cardInd++) {
-    
-    NSUInteger gridIndex = [self nextAvailableVisibleIndex];
-    
-    CGRect frame = [self getFrameForViewAtIndex:gridIndex];
-    
-    Card *card = [self.game cardAtIndex:cardInd];
-    SYSASSERT(card, @"Card should not be nil");
-    
-    CardView *cardView = [self createCardViewWithFrame:frame withCard:card];
-    SYSASSERT(cardView, @"CardView should not be nil");
-    
-    [self.cardViews addObject:cardView];
-    [self.cardsDisplayArea addSubview:cardView];
-    
-    // animate the card arrival from the bottom right corner.
-    CGRect initialFrame = cardView.frame;
-    initialFrame.origin = self.view.frame.origin;
-    initialFrame.origin.x += self.view.frame.size.width;
-    initialFrame.origin.y += self.view.frame.size.height;
-    
-    [cardView animateCardFrameChangeFromFrame:initialFrame toFrame:cardView.frame withDuration:CARD_ARRIVAL_ON_DEAL_ANIMATION_DURATION withDelay:delay];
-    delay += 0.1f;
-    
-    NSLog(@"Added at the index %d: CardView - %@, Card - %@", cardInd, cardView.contents, card.contents);
-  }
-}
+
+#pragma mark - UI
 
 /**
- *  The index of the first available space in the grid
+ *  Deal new cards. This operation aborts the current game and starts a new one. Alert is provided to the user to confirm his/her intentions
  *
- *  @return index in the grid
+ *  @param sender The button (not used)
  */
-- (NSUInteger)nextAvailableVisibleIndex
-{
-  NSUInteger visibleIndex = 0;
-  
-  for (int i = 0; i < [self.cardViews count]; i++) {
-    if (![self.cardViews[i] isHidden]) {
-      visibleIndex++;
-    }
-  }
-  return visibleIndex;
-}
-
-
-/**
- *  Given a view index within the grid return the frame for this view
- *
- *  @param cardInd the index of the view
- *
- *  @return frame for this view
- */
-- (CGRect)getFrameForViewAtIndex:(int)cardInd // TODO - replace with transform?
-{
-  NSUInteger r = cardInd / self.grid.columnCount;
-  NSUInteger c = cardInd % self.grid.columnCount;
-  
-  CGRect gridCell = [self.grid frameOfCellAtRow:r inColumn:c];
-  
-  // frames provided by grid take all the available space, so the frame for the card view
-  // should be scaled a little in order to provide some spacing between them
-  CGRect frame;
-  frame.size.width  = gridCell.size.width * CARD_VIEW_SCALE_FACTOR;
-  frame.size.height = gridCell.size.height * CARD_VIEW_SCALE_FACTOR;
-  
-  // Also the frame must be positioned in the center of the grid cell
-  frame.origin.x = gridCell.origin.x + (gridCell.size.height - frame.size.height) / 2;
-  frame.origin.y = gridCell.origin.y + (gridCell.size.width - frame.size.width) / 2;
-  
-  return frame;
-}
-
-#pragma mark - Outlets
-
-// at this stage the deal button doesn't prompt the user if he really intends to drop current game
-// TODO - animate departure of old cards and arrival of new ones
 - (IBAction)touchDealButton:(id)sender
 {
   [[[UIAlertView alloc] initWithTitle:@"Deal Cards"
@@ -241,18 +179,12 @@
                     otherButtonTitles:@"OK", nil] show];
 }
 
-
-- (void) reset
-{
-  // reset the model
-  [self.game restartGame];
-  
-  // reset the controller
-  [self.cardViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-  [self.cardViews removeAllObjects];
-  [self createCardViews]; // this will also reset the grid
-}
-
+/**
+ *  Alert delegate function. There are two alerts in this game: 1) confirm dealing new cards 2) notify user that there are no more matches available
+ *
+ *  @param alertView   Alert View
+ *  @param buttonIndex Index of the button that was pressed
+ */
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
   NSLog(@"AlertView with title: %@, buttonIndex = %d", alertView.title, buttonIndex);
@@ -374,10 +306,20 @@
 }
 
 
+# pragma mark - Outcome Animation Sequence
+
+/**
+ *  Callback function to the notification of the card selection completion. The card selection is always the first step in any user interaction. There might be more steps in animating the user interaction outcome. However this might also be the single step to process.
+ *
+ *  @param notification notification. Must be CARD_SELECTION_COMPLETED_NOTIFICATION
+ */
 - (void)cardSelectionCompleted:(NSNotification *)notification
 {
-  NSLog(@"Start processing notification: %@", CARD_SELECTION_COMPLETED_NOTIFICATION);
-  [[NSNotificationCenter defaultCenter] removeObserver:self name:CARD_SELECTION_COMPLETED_NOTIFICATION object:g_cardToChose];
+  NSLog(@"Start processing notification: %@", notification.name);
+  
+  SYSASSERT([notification.name isEqualToString:CARD_SELECTION_COMPLETED_NOTIFICATION], ([NSString stringWithFormat:@"Unexpected notification. Expected notification: %@, recieved: %@", CARD_SELECTION_COMPLETED_NOTIFICATION, notification.name]));
+  
+  [[NSNotificationCenter defaultCenter] removeObserver:self name:notification.name object:g_cardToChose];
   
   
   // one card has been just flipped over to face up state.
@@ -390,13 +332,11 @@
   NSUInteger numOfCardsToDeselect = [g_cardsToDeselect count];
   
   SYSASSERT((g_cardsToDeselect && g_cardsToDeselect), @"Arrays should not be nil");
-  SYSASSERT(!(numOfCardsToDeselect && numOfCardsToRemove), @"Only one of the arrays can be non-empty");
   NSLog(@"CardsToDeselect count: %d, CardsToRemove count: %d", numOfCardsToDeselect, numOfCardsToRemove);
 
-  
   // Option 1
   if (!numOfCardsToDeselect && !numOfCardsToRemove) {
-    NSLog(@"After card selection there is nothing more to do. Returning");
+    NSLog(@"After card selection there is nothing more to do.");
     
   // Option 2
   } else if (numOfCardsToDeselect) {
@@ -419,63 +359,24 @@
                     }
                     completion:^(BOOL finished) {
                       if (finished && ([g_cardsToRemove count] == 0)) {
-                        NSLog(@"finished removing card views");
-                        [self gridSetup];
-                        [self rearrangeCardViewsIfNeeded];
+                        if (self.game.curNumberOfCardsInGame == 0) {
+                          [self checkForGameOver];
+                        } else {
+                          NSLog(@"finished removing card views");
+                          [self gridSetup];
+                          [self rearrangeCardViewsIfNeeded];
+                        }
                       }
                     }];
-    
+  } else { // error
+    SYSASSERT(0, @"There are cards marked for deselection and there are cards marked for removal at the same time.");
   }
   
   [g_cardsToDeselect removeAllObjects];
   [g_cardsToRemove removeAllObjects];
-  NSLog(@"Finished processing notification: %@", CARD_SELECTION_COMPLETED_NOTIFICATION);
+  NSLog(@"Finished processing notification: %@", notification.name);
 }
 
-/**
- *  Reveal all the remaining cards (flip them face up). It will happen only when there are no more matches available with the remaining cards
- */
-- (void)revealCardsForGameOver
-{
-  NSLog(@"Revealing cards for game over");
-
-  for (CardView *cardView in self.cardViews) {
-    if ((!cardView.isHidden) && (!cardView.isFaceUp)) {
-      [cardView toggleSelectedState];
-    }
-  }
-}
-
-
-#pragma mark - Process User Input
-
-/**
- *  Translate index from the game model logic which holds all the cards that ever were dealt in this game, in their original order to the grid of the visible cards only. Index in the grid is calculated from the tap gesture recogniser, to translate it to the game logic index the visible index must be offset by amount of the hidden cards upto this particular index
- *
- *  @param visibleCardIndex index in the grid of visible cards
- *
- *  @return index in the game array of cards
- */
-- (NSUInteger)translateToGameIndexFromVisibleIndex:(NSUInteger)visibleCardIndex
-{
-  NSUInteger chosenCardIndex = visibleCardIndex; // it is at least a visibleCardIndex
-  NSUInteger visibleCards = 0;
-  
-  SYSASSERT([self.cardViews count], @"CardViews array is empty - nothing to translate");
-  
-  for (int i = 0; i < [self.cardViews count]; i++) {
-    if (![self.cardViews[i] isHidden]) {
-      visibleCards++;
-    }
-    
-    if (visibleCards == visibleCardIndex + 1) {
-      chosenCardIndex = i;
-      break;
-    }
-  }
-  
-  return chosenCardIndex;
-}
 
 /**
  *  Recalculate size and position of the card views that are currently in play.
@@ -535,8 +436,11 @@
   return cardsWereRearranged;
 }
 
+#pragma mark - Game Over Handling
 
-
+/**
+ *  Check if there are more matches available with the remaining cards
+ */
 - (void)checkForGameOver
 {
   NSLog(@"Checking for game over");
@@ -560,6 +464,140 @@
                       otherButtonTitles:@"Start New Game", nil] show];
      }
 }
+
+/**
+ *  Reveal all the remaining cards (flip them face up). It will happen only when there are no more matches available with the remaining cards
+ */
+- (void)revealCardsForGameOver
+{
+  NSLog(@"Revealing cards for game over");
+  
+  for (CardView *cardView in self.cardViews) {
+    if ((!cardView.isHidden) && (!cardView.isFaceUp)) {
+      [cardView toggleSelectedState];
+    }
+  }
+}
+
+
+#pragma mark - Views Creation (Aux Methods)
+
+/**
+ *  Add views of type CardView to the curent game. This method is called after the cards had been added to the game in the model.
+ *
+ *  @param fromInd the first index in the grid to place the first of the new CardView's
+ *  @param toInd   the last index in the grid to place the last of the new CardView's
+ *  @param delay   delay for animating the card arrival on screen
+ */
+- (void)addViewsForCardsFromIndex:(NSUInteger)fromInd toIndex:(NSUInteger)toInd animateWithDelay:(CGFloat)delay
+{
+  NSLog(@"fromInd = %d, toInd = %d", fromInd, toInd);
+  
+  // The grid will affect the cards size so it must be setup before constructing new CardView objects
+  [self gridSetup];
+  
+  for (NSUInteger cardInd = fromInd; cardInd <= toInd; cardInd++) {
+    
+    NSUInteger gridIndex = [self nextAvailableVisibleIndex];
+    
+    CGRect frame = [self getFrameForViewAtIndex:gridIndex];
+    
+    Card *card = [self.game cardAtIndex:cardInd];
+    SYSASSERT(card, @"Card should not be nil");
+    
+    CardView *cardView = [self createCardViewWithFrame:frame withCard:card];
+    SYSASSERT(cardView, @"CardView should not be nil");
+    
+    [self.cardViews addObject:cardView];
+    [self.cardsDisplayArea addSubview:cardView];
+    
+    // animate the card arrival from the bottom right corner.
+    CGRect initialFrame = cardView.frame;
+    initialFrame.origin = self.view.frame.origin;
+    initialFrame.origin.x += self.view.frame.size.width;
+    initialFrame.origin.y += self.view.frame.size.height;
+    
+    [cardView animateCardFrameChangeFromFrame:initialFrame toFrame:cardView.frame withDuration:CARD_ARRIVAL_ON_DEAL_ANIMATION_DURATION withDelay:delay];
+    delay += 0.1f;
+    
+    NSLog(@"Added at the index %d: CardView - %@, Card - %@", cardInd, cardView.contents, card.contents);
+  }
+}
+
+
+/**
+ *  The index of the first available space in the grid
+ *
+ *  @return index in the grid
+ */
+- (NSUInteger)nextAvailableVisibleIndex
+{
+  NSUInteger visibleIndex = 0;
+  
+  for (int i = 0; i < [self.cardViews count]; i++) {
+    if (![self.cardViews[i] isHidden]) {
+      visibleIndex++;
+    }
+  }
+  return visibleIndex;
+}
+
+
+/**
+ *  Given a view index within the grid return the frame for this view
+ *
+ *  @param cardInd the index of the view
+ *
+ *  @return frame for this view
+ */
+- (CGRect)getFrameForViewAtIndex:(int)cardInd // TODO - replace with transform?
+{
+  NSUInteger r = cardInd / self.grid.columnCount;
+  NSUInteger c = cardInd % self.grid.columnCount;
+  
+  CGRect gridCell = [self.grid frameOfCellAtRow:r inColumn:c];
+  
+  // frames provided by grid take all the available space, so the frame for the card view
+  // should be scaled a little in order to provide some spacing between them
+  CGRect frame;
+  frame.size.width  = gridCell.size.width * CARD_VIEW_SCALE_FACTOR;
+  frame.size.height = gridCell.size.height * CARD_VIEW_SCALE_FACTOR;
+  
+  // Also the frame must be positioned in the center of the grid cell
+  frame.origin.x = gridCell.origin.x + (gridCell.size.height - frame.size.height) / 2;
+  frame.origin.y = gridCell.origin.y + (gridCell.size.width - frame.size.width) / 2;
+  
+  return frame;
+}
+
+
+/**
+ *  Translate index from the game model logic which holds all the cards that ever were dealt in this game, in their original order to the grid of the visible cards only. Index in the grid is calculated from the tap gesture recogniser, to translate it to the game logic index the visible index must be offset by amount of the hidden cards upto this particular index
+ *
+ *  @param visibleCardIndex index in the grid of visible cards
+ *
+ *  @return index in the game array of cards
+ */
+- (NSUInteger)translateToGameIndexFromVisibleIndex:(NSUInteger)visibleCardIndex
+{
+  NSUInteger chosenCardIndex = visibleCardIndex; // it is at least a visibleCardIndex
+  NSUInteger visibleCards = 0;
+  
+  SYSASSERT([self.cardViews count], @"CardViews array is empty - nothing to translate");
+  
+  for (int i = 0; i < [self.cardViews count]; i++) {
+    if (![self.cardViews[i] isHidden]) {
+      visibleCards++;
+    }
+    
+    if (visibleCards == visibleCardIndex + 1) {
+      chosenCardIndex = i;
+      break;
+    }
+  }
+  return chosenCardIndex;
+}
+
 
 #pragma mark - Virtual Methods
 // Used throw exception mechanism in order to enforce the abstracness of these methods.
@@ -590,6 +628,10 @@
   mustOverride();
 }
 
+- (CGFloat)getCardAspectRatio
+{
+  mustOverride();
+}
 
 
 @end

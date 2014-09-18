@@ -16,12 +16,14 @@
 
 @interface CardGameViewController : UIViewController
 
+
 // Virtual methods declarations
 // If not implemented in subclass, instantiating and using this class will eventually result in Assert.
 - (Deck *)createDeck;
 - (NSUInteger)numOfCardsToMatch;
 - (NSUInteger)defaultNumOfCardsInGame;
 - (CardView *)createCardViewWithFrame:(CGRect)frame withCard:(Card *)card;
+- (CGFloat)getCardAspectRatio;
 
 
 @end

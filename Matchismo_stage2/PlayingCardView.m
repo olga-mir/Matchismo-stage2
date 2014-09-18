@@ -23,6 +23,14 @@
 
 @implementation PlayingCardView
 
+// default aspect ratio of the playing card ("Poker" type) - 56/88
+#define PLAYING_CARD_ASPECT_RATIO 0.625
+
++ (CGFloat)getCardAspectRatio
+{
+  return PLAYING_CARD_ASPECT_RATIO;
+}
+
 #pragma mark - Initialization
 // designated initializer
 // it is provided that the card is the Playing Card and is not checked here.
@@ -58,7 +66,6 @@
 }
 
 + (NSUInteger) maxRank {return [[self rankStrings] count] - 1;}
-
 
 @synthesize faceCardScaleFactor = _faceCardScaleFactor;
 
@@ -138,17 +145,6 @@
   // self.rank is always a valid number. The data integrety verified at the setter.
   return @[@"?", @"A", @"2", @"3", @"4", @"5", @"6", @"7", @"8", @"9", @"10", @"J", @"Q", @"K"][self.rank];
 }
-
-
-// default aspect ratio of the playing card ("Poker" type) - 56/88
-#define CARD_ASPECT_RATIO 0.625
-
-- (CGFloat)getCardAspectRatio
-{
-  NSLog(@"PLAYING CARD getCardAspectRatio");
-  return CARD_ASPECT_RATIO;
-}
-
 
 #define CORNER_FONT_STANDART_HEIGHT 180.0
 #define CORNER_RADIUS 12.0
