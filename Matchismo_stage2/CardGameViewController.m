@@ -100,12 +100,12 @@
   
   self.cardsDisplayArea.userInteractionEnabled = YES;
   
-  // Aspect ratio is constant througt the game. Other grid inputs are geometry dependend, so they are set in viewDidLayoutSubviews
+  // Aspect ratio is constant through out the game. Other grid inputs depend on geometry and number of cards in the game, so the grid is updated in a few more places
   self.grid.cellAspectRatio = [self getCardAspectRatio];
   
   // Auxilary data structures used to process and animate each step in the game
-  g_cardsToDeselect = [NSMutableArray new];
-  g_cardsToRemove   = [NSMutableArray new];
+  g_cardsToDeselect = [[NSMutableArray alloc] init];
+  g_cardsToRemove   = [[NSMutableArray alloc] init];
 }
 
 - (void)viewDidLayoutSubviews
@@ -113,16 +113,19 @@
   NSLog(@"viewDidLayoutSubviews");
   
   [super viewDidLayoutSubviews];
-  
-  [self gridSetup];
-  
+
   // The game will start with cards already dealt from the deck.
   if (![self.cardViews count]) {
     [self createCardViews];
+  } else if ([self gridNeedsUpdate]) {
+    [self rearrangeCardViewsWithCheckForGameOver:NO];
   } else {
-    [self rearrangeCardViewsIfNeeded];
+    NSLog(@"Did nothing in viewDidLayoutSubviews");
   }
+
+  self.scoreLabel.text = [NSString stringWithFormat:@"Score: %d", self.game.score];
 }
+
 
 #pragma mark - Setup and Reset Methods
 
@@ -138,19 +141,8 @@
   [self.cardViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
   [self.cardViews removeAllObjects];
   [self createCardViews]; // this will also reset the grid
-}
-
-/**
- *  Setup the grid inputs. Grid is based on 3 inputs: size, aspect ration and number of cells. During the game any of this can change and therefore the grid should be updated in the appropriate places in the code. For example card removal due to match, adding more cards.
- */
-- (void)gridSetup
-{
-  SYSASSERT((self.grid.cellAspectRatio != 0), @"Grid cell aspect ratio must be set and different from 0");
   
-  self.grid.size = self.cardsDisplayArea.frame.size;
-  self.grid.minimumNumberOfCells = [self.game curNumberOfCardsInGame];
-  
-  SYSASSERT(self.grid.inputsAreValid, @"Grid inputs are invalid");
+  self.scoreLabel.text = [NSString stringWithFormat:@"Score: %d", self.game.score];
 }
 
 
@@ -159,6 +151,7 @@
  */
 - (void)createCardViews
 {
+  [self rearrangeCardViewsWithCheckForGameOver:NO];
   [self addViewsForCardsFromIndex:0 toIndex:(self.game.curNumberOfCardsInGame - 1) animateWithDelay:0];
 }
 
@@ -218,9 +211,7 @@
   } else {
     
     // As a result of adding more cards the grid might have changed and the remaining cards should recalculate their new size and position
-    [self gridSetup];
-  
-    BOOL cardsWereRearranged = [self rearrangeCardViewsIfNeeded];
+    BOOL cardsWereRearranged = [self rearrangeCardViewsWithCheckForGameOver:NO];
     CGFloat animationDelay = cardsWereRearranged ? REARRANGEMENT_ANIMATION_DURATION : 0;
     
     // Now add new card views to the game
@@ -291,6 +282,9 @@
         [g_cardsToRemove addObject:cardView];
       }
     }
+    
+    // Although animating step outcome will take some time to complete (about 1 sec), the label with the score will be updated here for code simplicity
+    self.scoreLabel.text = [NSString stringWithFormat:@"Score: %d", self.game.score];
   }
   
   // Now we can animate all the changes
@@ -317,8 +311,11 @@
 {
   NSLog(@"Start processing notification: %@", notification.name);
   
-  SYSASSERT([notification.name isEqualToString:CARD_SELECTION_COMPLETED_NOTIFICATION], ([NSString stringWithFormat:@"Unexpected notification. Expected notification: %@, recieved: %@", CARD_SELECTION_COMPLETED_NOTIFICATION, notification.name]));
-  
+  SYSASSERT([notification.name isEqualToString:CARD_SELECTION_COMPLETED_NOTIFICATION],
+            ([NSString stringWithFormat:@"Unexpected notification. Expected notification: %@, recieved: %@",
+              CARD_SELECTION_COMPLETED_NOTIFICATION, notification.name]));
+
+#warning is this the right place to remove observer?
   [[NSNotificationCenter defaultCenter] removeObserver:self name:notification.name object:g_cardToChose];
   
   
@@ -349,7 +346,7 @@
   } else if (numOfCardsToRemove) {
     NSLog(@"Removing cards");
     
-    [UIView transitionWithView:self.view     // TODO - reasearch why 'animateWithDuration' methods don't work as expected :(
+    [UIView transitionWithView:self.view
                       duration:0.4
                        options:UIViewAnimationOptionTransitionCrossDissolve
                     animations:^{
@@ -363,18 +360,35 @@
                           [self checkForGameOver];
                         } else {
                           NSLog(@"finished removing card views");
-                          [self gridSetup];
-                          [self rearrangeCardViewsIfNeeded];
+                          [self rearrangeCardViewsWithCheckForGameOver:YES];
                         }
                       }
                     }];
   } else { // error
-    SYSASSERT(0, @"There are cards marked for deselection and there are cards marked for removal at the same time.");
+    SYSASSERT(0, @"Cards existing both in array for removal and array for deselection.");
   }
   
   [g_cardsToDeselect removeAllObjects];
   [g_cardsToRemove removeAllObjects];
   NSLog(@"Finished processing notification: %@", notification.name);
+}
+
+- (BOOL)gridNeedsUpdate
+{
+  BOOL gridHasChanged = NO;
+  
+  NSLog(@"self.grid.minimumNumberOfCells = %d, [self.game curNumberOfCardsInGame] = %d",
+        self.grid.minimumNumberOfCells, [self.game curNumberOfCardsInGame]);
+  
+  // The grid can change as a result of: 1) device rotation change 2) change in munber of cards (it can increase or decrease)
+  if (self.grid.size.width != self.cardsDisplayArea.frame.size.width ||  // it is enough to compare only one demension since they are tight by aspect ratio
+      self.grid.minimumNumberOfCells != [self.game curNumberOfCardsInGame]){
+    
+    gridHasChanged = YES;
+  }
+  NSLog(@"GridNeedsUpdate: %d", gridHasChanged);
+  
+  return gridHasChanged;
 }
 
 
@@ -383,17 +397,26 @@
  *
  *  @return if there were actual changes in the cards layout (either size or position or both of at least one card)
  */
-- (BOOL)rearrangeCardViewsIfNeeded
+- (BOOL)rearrangeCardViewsWithCheckForGameOver:(BOOL)shouldCheckForGameOver
 {
-  NSLog(@"rearrangeCardViewsIfNeeded");
+  NSLog(@"updateGridAndRearrangeCardViewsIfNeeded");
+  
+  SYSASSERT((self.grid.cellAspectRatio != 0), @"Grid cell aspect ratio must be set and different from 0");
   
   __block BOOL cardsWereRearranged = NO;
   
+  NSLog(@"self.grid.minimumNumberOfCells = %d, [self.game curNumberOfCardsInGame] = %d", self.grid.minimumNumberOfCells, [self.game curNumberOfCardsInGame]);
+  
+  // grid setup
+  self.grid.size = self.cardsDisplayArea.frame.size;
+  self.grid.minimumNumberOfCells = [self.game curNumberOfCardsInGame];
+  SYSASSERT(self.grid.inputsAreValid, @"Grid inputs are invalid");
+  
+  
   // first find all the cardViews that are currently visible
   NSMutableArray *visibleCardViews = [NSMutableArray new];
-  
   NSUInteger currVisibleInd = 0;
-
+  
   for (NSUInteger currInd = 0; currInd < [self.cardViews count]; currInd++) {
     
     CardView *cardView = self.cardViews[currInd];
@@ -407,7 +430,7 @@
   // now that we have all the visible cardViews in one array, we can calculate new frame for each of them
   // it is also possible that there were no changes in the layout, that's why there is an indication for the caller should it be interested
   [UIView transitionWithView:self.view
-                    duration:0.4
+                    duration:0.3
                      options:UIViewAnimationOptionTransitionNone
                   animations:^{
                     [visibleCardViews enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -422,19 +445,24 @@
                           cardsWereRearranged = YES;
                         }
                       }
-  
+
                       cardView.frame = frame;
                     }];
                   }
                   completion:^(BOOL finished) {
                     if (finished) {
                       NSLog(@"finished rearranging");
-                      [self checkForGameOver];
+                      if (shouldCheckForGameOver) {
+                        [self checkForGameOver];
+                      }
                     }
                   }];
   
+  
+  NSLog(@"updateGridAndRearrangeCardViewsIfNeeded returning: %d", cardsWereRearranged);
   return cardsWereRearranged;
 }
+
 
 #pragma mark - Game Over Handling
 
@@ -444,7 +472,7 @@
 - (void)checkForGameOver
 {
   NSLog(@"Checking for game over");
-  if(!self.game.moreMatchesAvailable) {
+  if(![self.game moreMatchesAvailable]) {
     
     NSString *msg = nil;
     
@@ -492,10 +520,7 @@
 - (void)addViewsForCardsFromIndex:(NSUInteger)fromInd toIndex:(NSUInteger)toInd animateWithDelay:(CGFloat)delay
 {
   NSLog(@"fromInd = %d, toInd = %d", fromInd, toInd);
-  
-  // The grid will affect the cards size so it must be setup before constructing new CardView objects
-  [self gridSetup];
-  
+
   for (NSUInteger cardInd = fromInd; cardInd <= toInd; cardInd++) {
     
     NSUInteger gridIndex = [self nextAvailableVisibleIndex];
@@ -550,8 +575,11 @@
  *
  *  @return frame for this view
  */
-- (CGRect)getFrameForViewAtIndex:(int)cardInd // TODO - replace with transform?
+- (CGRect)getFrameForViewAtIndex:(int)cardInd
 {
+  SYSASSERT(self.grid.inputsAreValid, @"Grid inputs are not valid");
+  SYSASSERT(self.grid.columnCount, @"Grid column count cannot be 0");
+  
   NSUInteger r = cardInd / self.grid.columnCount;
   NSUInteger c = cardInd % self.grid.columnCount;
   
@@ -583,7 +611,7 @@
   NSUInteger chosenCardIndex = visibleCardIndex; // it is at least a visibleCardIndex
   NSUInteger visibleCards = 0;
   
-  SYSASSERT([self.cardViews count], @"CardViews array is empty - nothing to translate");
+  SYSASSERT([self.cardViews count], @"Index translation error: CardViews array is empty.");
   
   for (int i = 0; i < [self.cardViews count]; i++) {
     if (![self.cardViews[i] isHidden]) {
@@ -635,5 +663,3 @@
 
 
 @end
-
-

@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "Card.h"
 
-@interface Deck : NSObject
+@interface Deck : NSObject <NSCopying>
 
 - (void)addCard:(Card *) card atTop:(BOOL)atTop;
 - (void)addCard:(Card *) card;
@@ -18,6 +18,5 @@
 
 - (NSUInteger)remainingCards;
 
-- (instancetype)copy;
 
 @end

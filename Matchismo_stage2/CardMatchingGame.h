@@ -15,10 +15,6 @@
 // Current game score
 @property (nonatomic, readonly) NSInteger score;
 
-// indication whether there are more matches possible with the cards left
-@property (nonatomic, readonly) BOOL moreMatchesAvailable;
-
-
 // designated initializer
 - (instancetype)initWithCardCount:(NSUInteger)count usingDeck:(Deck *)deck cardsInSet:(NSUInteger)numOfCardsToMatch;
 
@@ -32,15 +28,18 @@
 // return number of cards that are currently in the game (dealt from the deck and not taken away by matches)
 - (NSUInteger)curNumberOfCardsInGame;
 
-// Total number of cards in game, including cards "removed" by previous matches.
-// It starts with default number of cards provided to initializer on object creation and increases every time
-// user requests more cards to add to the current game.
-//- (NSUInteger)totalNumberOfCardsInGame;
 
 // add requested number of cards from the deck to the game
 // return False if there were not enough cards in the deck.
 - (BOOL)addCardsToPlay:(NSUInteger)cardsToAdd;
 
+
+/**
+ *  Return indication if there are matches available with the cards that are currently in the game. If there are no matches in the game the property aRandomMatch will be empty array, otherwise it will always hold a set of cards that matches
+ *
+ *  @return YES if there are matches available and NO if there are no matches
+ */
+- (BOOL)moreMatchesAvailable;
 
 
 @end

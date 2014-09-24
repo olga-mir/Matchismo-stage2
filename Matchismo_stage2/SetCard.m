@@ -83,21 +83,55 @@
   return @[@"squiggle", @"diamond", @"oval"];
 }
 
-// Create a string from the card content
-// "2-green-striped-squiggles"
-- (NSString *)contents {
+
+/**
+ *  Get string representation of the card. Example: "2-green-striped-squiggles"
+ *
+ *  @return string representing the card
+ */
+- (NSString *)contents
+{
   return [NSString stringWithFormat:@"%d-%@-%@-%@", self.rank, self.color, self.filling, self.shape];
 }
 
-- (instancetype)copy
+
+
+/**
+ *  Deisignated initializer
+ *
+ *  @param playingCard playingCard to create the exact duplicate
+ *
+ *  @return self, duplicate of the received playingCard
+ */
+- (instancetype)initWithCard:(SetCard *)setCard
 {
-  SetCard *setCardCopy = [[SetCard alloc] init];
-  setCardCopy.rank = self.rank;
-  setCardCopy.color = self.color;
-  setCardCopy.filling = self.filling;
-  setCardCopy.shape = self.shape;
-  return setCardCopy;
+  self = [super initWithCard:setCard];
+  
+  if (self) {
+    _rank    = self.rank;
+    _color   = self.color;
+    _filling = self.filling;
+    _shape   = self.shape;
+
+  }  
+  return self;
 }
+
+
+/**
+ *  NScopying protocol
+ *
+ *  @param zone zone of memory to allocate the copy object
+ *
+ *  @return exact copy of the receiver object
+ */
+- (id)copyWithZone:(NSZone *)zone
+{
+  return [[SetCard alloc] initWithCard:self];
+}
+
+
+#pragma mark - Matching Logic
 
 #define POINTS_FOR_MATCH 6
 
@@ -119,7 +153,7 @@ typedef enum RULES {
 - (int)match:(NSArray *)otherCards
 {
   // Set is always three card game
-  SYSASSERT(([otherCards count] == 2), @"The Set game is always a 3-card matching game. Number of cards provided for matching is not 3");
+  SYSASSERT(([otherCards count] == 2), ([NSString stringWithFormat:@"The Set game is always a 3-card matching game. Number of cards provided is %d", [otherCards count]]));
   
   SetCard *card2 = [otherCards firstObject];
   SetCard *card3 = [otherCards lastObject];

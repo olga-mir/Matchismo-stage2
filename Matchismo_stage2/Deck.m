@@ -49,22 +49,29 @@
   return randomCard;
 }
 
+
 // return the current number of cards in the deck
 - (NSUInteger)remainingCards
 {
   return [self.cards count];
 }
 
-// clone the deck
-- (instancetype)copy
+/**
+ *  NSCopying protocol
+ *
+ *  @param zone memory zone to allocate new object (not used)
+ *
+ *  @return deck, exact copy of self
+ */
+- (id)copyWithZone:(NSZone *)zone
 {
   Deck *deckCopy = [[Deck alloc] init];
+  
   for (int i = 0; i < [self.cards count]; i++) {
     Card *cardCopy = [self.cards[i] copy];
     [deckCopy addCard:cardCopy];
   }
   return deckCopy;
 }
-
 
 @end

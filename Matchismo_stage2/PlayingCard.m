@@ -11,20 +11,23 @@
 
 @implementation PlayingCard
 
-- (NSString *)contents {
+- (NSString *)contents
+{
   NSArray *rankStrings = [PlayingCard rankStrings];
   return [rankStrings[self.rank] stringByAppendingString:self.suit];
 }
 
 @synthesize suit = _suit;
 
-- (void)setSuit:(NSString *)suit {
+- (void)setSuit:(NSString *)suit
+{
   if ([[PlayingCard validSuits] containsObject:suit]) {
     _suit = suit;
   }
 }
 
-- (NSString *)suit {
+- (NSString *)suit
+{
   return _suit ? _suit : @"?";
 }
 
@@ -47,13 +50,50 @@
   }
 }
 
-- (instancetype)copy
+- (NSString *)rankAsString
 {
-  PlayingCard *playingCardCopy = [[PlayingCard alloc] init];
-  playingCardCopy.rank = self.rank;
-  playingCardCopy.suit = self.suit;
-  return  playingCardCopy;
+  return [PlayingCard rankStrings][self.rank];
 }
+
+- (NSString *)description
+{
+  return self.contents;
+}
+
+
+/**
+ *  Deisignated initializer
+ *
+ *  @param playingCard playingCard to create the exact duplicate
+ *
+ *  @return self, duplicate of the received playingCard
+ */
+- (instancetype)initWithCard:(PlayingCard *)playingCard
+{
+  self = [super initWithCard:playingCard];
+  
+  if (self) {
+    _rank = playingCard.rank;
+    _suit = playingCard.suit;
+  }
+  
+  return self;
+}
+
+/**
+ *  NScopying protocol
+ *
+ *  @param zone zone of memory to allocate the copy object
+ *
+ *  @return exact copy of the receiver object
+ */
+- (id)copyWithZone:(NSZone *)zone
+{
+  return [[PlayingCard alloc] initWithCard:self];
+}
+
+
+#pragma mark - Matching Logic
 
 #define RANK_MATCH_SCORE 4
 #define SUIT_MATCH_SCORE 2
@@ -94,18 +134,6 @@
   
   return score;
 }
-
-
-- (NSString *)rankAsString
-{
-  return [PlayingCard rankStrings][self.rank];
-}
-
-- (NSString *)description
-{
-  return self.contents;
-}
-
 
 
 

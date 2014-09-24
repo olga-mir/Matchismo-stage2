@@ -11,6 +11,26 @@
 
 @implementation Card
 
+- (instancetype)initWithCard:(Card *)card
+{
+  self = [super init];
+  if (self) {
+    _matched = card.matched;
+    _chosen = card.chosen;
+  }
+  return self;
+}
+
+
+- (id)copyWithZone:(NSZone *)zone
+{
+  Card *cardCopy = [[Card alloc] init];
+  cardCopy.contents = self.contents;
+  cardCopy.chosen = self.chosen;
+  cardCopy.matched = self.matched;
+  return cardCopy;
+}
+
 - (NSString *)description
 {
   return [NSString stringWithFormat:@"Card contents: %@",  self.contents];
