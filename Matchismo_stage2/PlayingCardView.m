@@ -87,7 +87,7 @@
 
 - (void) setRank:(NSUInteger) rank
 {
-  SYSASSERT(((rank > 0) && (rank <= [PlayingCardView maxRank])), ([NSString stringWithFormat:@"Invalid rank: %d", rank]));
+  SYSASSERT(((rank > 0) && (rank <= [PlayingCardView maxRank])), ([NSString stringWithFormat:@"Invalid rank: %lu", (unsigned long)rank]));
   
   _rank = rank;
   [self setNeedsDisplay];

@@ -123,7 +123,7 @@
     NSLog(@"Did nothing in viewDidLayoutSubviews");
   }
 
-  self.scoreLabel.text = [NSString stringWithFormat:@"Score: %d", self.game.score];
+  self.scoreLabel.text = [NSString stringWithFormat:@"Score: %ld", (long)self.game.score];
 }
 
 
@@ -142,7 +142,7 @@
   [self.cardViews removeAllObjects];
   [self createCardViews]; // this will also reset the grid
   
-  self.scoreLabel.text = [NSString stringWithFormat:@"Score: %d", self.game.score];
+  self.scoreLabel.text = [NSString stringWithFormat:@"Score: %ld", (long)self.game.score];
 }
 
 
@@ -180,7 +180,7 @@
  */
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
-  NSLog(@"AlertView with title: %@, buttonIndex = %d", alertView.title, buttonIndex);
+  NSLog(@"AlertView with title: %@, buttonIndex = %ld", alertView.title, (long)buttonIndex);
   
   if ([alertView.title isEqualToString:@"Deal Cards"]) {
     if (buttonIndex == 1) { // "OK" button is pressed - go ahead and reset the game
@@ -284,7 +284,7 @@
     }
     
     // Although animating step outcome will take some time to complete (about 1 sec), the label with the score will be updated here for code simplicity
-    self.scoreLabel.text = [NSString stringWithFormat:@"Score: %d", self.game.score];
+    self.scoreLabel.text = [NSString stringWithFormat:@"Score: %ld", (long)self.game.score];
   }
   
   // Now we can animate all the changes
@@ -329,7 +329,7 @@
   NSUInteger numOfCardsToDeselect = [g_cardsToDeselect count];
   
   SYSASSERT((g_cardsToDeselect && g_cardsToDeselect), @"Arrays should not be nil");
-  NSLog(@"CardsToDeselect count: %d, CardsToRemove count: %d", numOfCardsToDeselect, numOfCardsToRemove);
+  NSLog(@"CardsToDeselect count: %lu, CardsToRemove count: %lu", (unsigned long)numOfCardsToDeselect, (unsigned long)numOfCardsToRemove);
 
   // Option 1
   if (!numOfCardsToDeselect && !numOfCardsToRemove) {
@@ -377,8 +377,8 @@
 {
   BOOL gridHasChanged = NO;
   
-  NSLog(@"self.grid.minimumNumberOfCells = %d, [self.game curNumberOfCardsInGame] = %d",
-        self.grid.minimumNumberOfCells, [self.game curNumberOfCardsInGame]);
+  NSLog(@"self.grid.minimumNumberOfCells = %lu, [self.game curNumberOfCardsInGame] = %lu",
+        (unsigned long)self.grid.minimumNumberOfCells, (unsigned long)[self.game curNumberOfCardsInGame]);
   
   // The grid can change as a result of: 1) device rotation change 2) change in munber of cards (it can increase or decrease)
   if (self.grid.size.width != self.cardsDisplayArea.frame.size.width ||  // it is enough to compare only one demension since they are tight by aspect ratio
@@ -405,7 +405,7 @@
   
   __block BOOL cardsWereRearranged = NO;
   
-  NSLog(@"self.grid.minimumNumberOfCells = %d, [self.game curNumberOfCardsInGame] = %d", self.grid.minimumNumberOfCells, [self.game curNumberOfCardsInGame]);
+  NSLog(@"self.grid.minimumNumberOfCells = %lu, [self.game curNumberOfCardsInGame] = %lu", (unsigned long)self.grid.minimumNumberOfCells, (unsigned long)[self.game curNumberOfCardsInGame]);
   
   // grid setup
   self.grid.size = self.cardsDisplayArea.frame.size;
@@ -435,7 +435,7 @@
                   animations:^{
                     [visibleCardViews enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                       CardView *cardView = (CardView *)obj;
-                      CGRect frame = [self getFrameForViewAtIndex:idx];
+                      CGRect frame = [self getFrameForViewAtIndex:(int)idx];
                       
                       // If cards need to be rearranged then at least one of them will have new origin
                       // and we need to find only one such card to determine this
@@ -519,13 +519,13 @@
  */
 - (void)addViewsForCardsFromIndex:(NSUInteger)fromInd toIndex:(NSUInteger)toInd animateWithDelay:(CGFloat)delay
 {
-  NSLog(@"fromInd = %d, toInd = %d", fromInd, toInd);
+  NSLog(@"fromInd = %lu, toInd = %lu", (unsigned long)fromInd, (unsigned long)toInd);
 
   for (NSUInteger cardInd = fromInd; cardInd <= toInd; cardInd++) {
     
     NSUInteger gridIndex = [self nextAvailableVisibleIndex];
     
-    CGRect frame = [self getFrameForViewAtIndex:gridIndex];
+    CGRect frame = [self getFrameForViewAtIndex:(int)gridIndex];
     
     Card *card = [self.game cardAtIndex:cardInd];
     SYSASSERT(card, @"Card should not be nil");
@@ -545,7 +545,7 @@
     [cardView animateCardFrameChangeFromFrame:initialFrame toFrame:cardView.frame withDuration:CARD_ARRIVAL_ON_DEAL_ANIMATION_DURATION withDelay:delay];
     delay += 0.1f;
     
-    NSLog(@"Added at the index %d: CardView - %@, Card - %@", cardInd, cardView.contents, card.contents);
+    NSLog(@"Added at the index %lu: CardView - %@, Card - %@", (unsigned long)cardInd, cardView.contents, card.contents);
   }
 }
 

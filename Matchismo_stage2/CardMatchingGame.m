@@ -100,7 +100,7 @@
       self = nil;
       
       // In this implementation this situation will never happen. But assertion will help to catch this case if someone add another game later.
-      SYSASSERT(NO, ([NSString stringWithFormat:@"There is not enough cards in the deck to initialize game with requested count. Cards in deck: %d, requested number of cards: %d", [deck remainingCards], count]));
+      SYSASSERT(NO, ([NSString stringWithFormat:@"There is not enough cards in the deck to initialize game with requested count. Cards in deck: %lu, requested number of cards: %lu", (unsigned long)[deck remainingCards], (unsigned long)count]));
     }
   }
   return self;
@@ -179,7 +179,7 @@
  */
 - (BOOL)addCardsToPlay:(NSUInteger)numOfCardsToAdd
 {
-  NSLog(@"Adding %d more cards to game", numOfCardsToAdd);
+  NSLog(@"Adding %lu more cards to game", (unsigned long)numOfCardsToAdd);
   
   if (numOfCardsToAdd > [self.deck remainingCards]) {
     return NO; // implementation decision - if there are not enough cards in the deck then don't add any cards at all
@@ -222,7 +222,7 @@ static const int COST_TO_CHOSE = 1;
   Card *card = [self cardAtIndex:index];
   int scoreForCurrentMatch = 0;
   
-   NSLog(@"CardMatchingGame: choseCardAtIndex: %d, %@", index, card);
+   NSLog(@"CardMatchingGame: choseCardAtIndex: %lu, %@", (unsigned long)index, card);
   
   if (card.isChosen) {
     // if the card was already chosen, then toggle it back to unchosen state.
@@ -266,7 +266,7 @@ static const int COST_TO_CHOSE = 1;
                 NSLog(@"RANDOM_MATCH: JustMarried invalidates aRandomMatch. Try to find another randomMatch");
                 [self.aRandomMatch removeAllObjects];
                 self.aRandomMatch = [self findRandomMatch];
-                NSLog(@"RANDOM_MATCH: aRandomMatch count = %d", [self.aRandomMatch count]);
+                NSLog(@"RANDOM_MATCH: aRandomMatch count = %lu", (unsigned long)[self.aRandomMatch count]);
                 break;
               }
             }
@@ -324,7 +324,7 @@ static const int COST_TO_CHOSE = 1;
       // Although in the perfect world this model should support N cards matching mode, in the reality,
       // the simplicity of code and reduction of run-time computation and memory justifies introducing the assumption that
       // this model only supports 2 or 3 cards matching
-      NSLog(@"numOfCardsToMatch: %d", self.numOfCardsToMatch);
+      NSLog(@"numOfCardsToMatch: %lu", (unsigned long)self.numOfCardsToMatch);
       
       if (self.numOfCardsToMatch == 3) {
         for (int k = j + 1; k < [remainingCards count]; k++) {
@@ -345,7 +345,7 @@ static const int COST_TO_CHOSE = 1;
           [otherCards removeLastObject];
         } // end for k..
       } else {
-        NSLog(@"[otherCards count] = %d", [otherCards count]);
+        NSLog(@"[otherCards count] = %lu", (unsigned long)[otherCards count]);
         
         // now we have a set of cards, try to match them
         int score = [firstCard match:otherCards];

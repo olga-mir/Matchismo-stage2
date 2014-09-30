@@ -91,7 +91,7 @@
  */
 - (NSString *)contents
 {
-  return [NSString stringWithFormat:@"%d-%@-%@-%@", self.rank, self.color, self.filling, self.shape];
+  return [NSString stringWithFormat:@"%lu-%@-%@-%@", (unsigned long)self.rank, self.color, self.filling, self.shape];
 }
 
 
@@ -153,7 +153,7 @@ typedef enum RULES {
 - (int)match:(NSArray *)otherCards
 {
   // Set is always three card game
-  SYSASSERT(([otherCards count] == 2), ([NSString stringWithFormat:@"The Set game is always a 3-card matching game. Number of cards provided is %d", [otherCards count]]));
+  SYSASSERT(([otherCards count] == 2), ([NSString stringWithFormat:@"The Set game is always a 3-card matching game. Number of cards provided is %lu", (unsigned long)[otherCards count]]));
   
   SetCard *card2 = [otherCards firstObject];
   SetCard *card3 = [otherCards lastObject];
