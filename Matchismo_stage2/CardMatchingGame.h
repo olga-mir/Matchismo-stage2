@@ -29,17 +29,20 @@
 - (NSUInteger)curNumberOfCardsInGame;
 
 
-// add requested number of cards from the deck to the game
-// return False if there were not enough cards in the deck.
-- (BOOL)addCardsToPlay:(NSUInteger)cardsToAdd;
+/**
+ *  Add cards to play. The number of cards added is numOfCardsToMatch. If there are not enough cards left in the deck then there are no cards added and NO is returned.
+ *
+ *  @return YES - if the cards were edded successfully, NO - if there were not enough cards in the deck
+ */
+- (BOOL)addCardsToPlay;
 
 
 /**
- *  Return indication if there are matches available with the cards that are currently in the game. If there are no matches in the game the property aRandomMatch will be empty array, otherwise it will always hold a set of cards that matches
+ *  Check if the current game can not be continued.
  *
- *  @return YES if there are matches available and NO if there are no matches
+ *  @return YES - the current game is over. NO - the game can be continued
  */
-- (BOOL)moreMatchesAvailable;
+- (BOOL)isTheGameOver;
 
 
 @end

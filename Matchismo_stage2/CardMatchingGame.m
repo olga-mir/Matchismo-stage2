@@ -15,12 +15,8 @@
 
 @interface CardMatchingGame()
 
-/////// PUBLIC INTERFACE
-
 // Current game score
 @property (nonatomic, readwrite) NSInteger score;
-
-/////// PRIVATE INTERFACE
 
 // the card game mode - match 2 or 3 cards at a time.
 @property (nonatomic) NSUInteger numOfCardsToMatch;
@@ -96,7 +92,7 @@
  
       [self dealCards:count];
       _aRandomMatch = [self findRandomMatch];
-    } else {
+    } else { // not enough cards in the deck to initialize the game
       self = nil;
       
       // In this implementation this situation will never happen. But assertion will help to catch this case if someone add another game later.
@@ -171,21 +167,17 @@
 
 
 /**
- *  Add more cards to the current game. If the specified amount of cards could not be added then no cardss are added to the game. That means that either numOfCardsToAdd or 0 cards had been added to the game.
+ *  Add cards to play. The number of cards added is numOfCardsToMatch. If there are not enough cards left in the deck then there are no cards added and NO is returned.
  *
- *  @param numOfCardsToAdd number of cards to be added
- *
- *  @return YES if the requested number of cards was successfully added, NO - otherwise, e.g. when the deck was deplected.
+ *  @return YES - if the cards were edded successfully, NO - if there were not enough cards in the deck
  */
-- (BOOL)addCardsToPlay:(NSUInteger)numOfCardsToAdd
+- (BOOL)addCardsToPlay
 {
-  NSLog(@"Adding %lu more cards to game", (unsigned long)numOfCardsToAdd);
-  
-  if (numOfCardsToAdd > [self.deck remainingCards]) {
+  if (self.numOfCardsToMatch > [self.deck remainingCards]) {
     return NO; // implementation decision - if there are not enough cards in the deck then don't add any cards at all
   }
   
-  for (NSUInteger i = 0; i < numOfCardsToAdd; i++) {
+  for (NSUInteger i = 0; i < self.numOfCardsToMatch; i++) {
     [self.cards addObject:[self.deck drawRandomCard]];
   }
   
@@ -211,6 +203,7 @@ static const int COST_TO_CHOSE = 1;
   [self choseCardAtIndex:index];
   return card;
 }
+
 
 /**
  *  Chose card at given index. It will look for other chosen cards and will try to match them if there is at least total of 'numOfCardsToMatch' chosen cards. If the chosen cards form a match then a positive score is returned, otherwise zero or negative.
@@ -257,7 +250,7 @@ static const int COST_TO_CHOSE = 1;
             }
             card.matched = YES;
             
-            // now check if it is our aRandomMatch.
+            // now check if invalidates the current aRandomMatch.
             NSMutableSet *justMarried = [[NSMutableSet alloc] initWithArray:cardsToMatch];
             [justMarried addObject:card];
             
@@ -266,7 +259,6 @@ static const int COST_TO_CHOSE = 1;
                 NSLog(@"RANDOM_MATCH: JustMarried invalidates aRandomMatch. Try to find another randomMatch");
                 [self.aRandomMatch removeAllObjects];
                 self.aRandomMatch = [self findRandomMatch];
-                NSLog(@"RANDOM_MATCH: aRandomMatch count = %lu", (unsigned long)[self.aRandomMatch count]);
                 break;
               }
             }
@@ -307,16 +299,17 @@ static const int COST_TO_CHOSE = 1;
       [remainingCards addObject:card];
     }
   }
+  NSInteger remainingCardsCount = [remainingCards count];
   
   // set up combinations of a 'card' and 'otherCards' to match this card against
   Card *firstCard;
   NSMutableArray *otherCards = [[NSMutableArray alloc] init];
   
-  for (int i = 0; i < [remainingCards count]; i++) {
+  for (int i = 0; i < remainingCardsCount; i++) {
     
     firstCard = remainingCards[i]; // in the following loop(s) will set other cards to try match against this one
     
-    for (int j = i + 1; j < [remainingCards count]; j++) {
+    for (int j = i + 1; j < remainingCardsCount; j++) {
       
       [otherCards removeAllObjects];
       [otherCards addObject:remainingCards[j]];
@@ -324,45 +317,38 @@ static const int COST_TO_CHOSE = 1;
       // Although in the perfect world this model should support N cards matching mode, in the reality,
       // the simplicity of code and reduction of run-time computation and memory justifies introducing the assumption that
       // this model only supports 2 or 3 cards matching
-      NSLog(@"numOfCardsToMatch: %lu", (unsigned long)self.numOfCardsToMatch);
-      
       if (self.numOfCardsToMatch == 3) {
-        for (int k = j + 1; k < [remainingCards count]; k++) {
-          NSLog(@"Add 3rd card");
+        for (int k = j + 1; k < remainingCardsCount; k++) {
+ 
           [otherCards addObject:remainingCards[k]];
 
-          // now we have a set of cards, try to match them
-          int score = [firstCard match:otherCards];
-          if (score > 0) { // a match has been found
+          // Try match the cards, if matched then return this set.
+          if ([firstCard match:otherCards] > 0) {
             [aMatch addObject:firstCard];
             [aMatch addObjectsFromArray:otherCards];
-            NSLog(@"RANDOM_MATCH: Match has been found");
-            for (Card *c in aMatch) {
-              NSLog(@"%@,", c);
-            }
+            for (Card *c in aMatch) { NSLog(@"%@,", c); }
+
             return aMatch;
           }
-          [otherCards removeLastObject];
+          [otherCards removeLastObject];  // prepare for the next iteration. The last card will be replaced with the next card in remainingCards
         } // end for k..
-      } else {
-        NSLog(@"[otherCards count] = %lu", (unsigned long)[otherCards count]);
         
-        // now we have a set of cards, try to match them
-        int score = [firstCard match:otherCards];
-        if (score > 0) { // a match has been found
+      } else { // this is 2-card matching game
+ 
+        // Try match the cards, if matched then return this set.
+        if ([firstCard match:otherCards] > 0) {
           [aMatch addObject:firstCard];
           [aMatch addObjectsFromArray:otherCards];
-          NSLog(@"RANDOM_MATCH: Match has been found");
-          for (Card *c in aMatch) {
-            NSLog(@"%@,", c);
-          }
+          for (Card *c in aMatch) { NSLog(@"%@,", c); }
+
           return aMatch;
         }
       }
     } // end for j..
   } // end for i..
   
-  return aMatch;
+  NSLog(@"Match was not found");
+  return aMatch; // this is an empty set
 }
 
 
@@ -373,8 +359,28 @@ static const int COST_TO_CHOSE = 1;
  */
 - (BOOL)moreMatchesAvailable
 {
+  // debug code: aRandomMacth must always contain some match if at least one match exists with the cards that are currently in game.
+  NSMutableSet *someMatch = [self findRandomMatch];
+  SYSASSERT([someMatch count] == [self.aRandomMatch count], @"CardMatchingGame - state inconsistency");
+  
   return [self.aRandomMatch count];
 }
+
+
+#pragma mark - Virtual Methods
+
+- (BOOL)isTheGameOver
+{
+  BOOL result = YES;
+  if ([self moreMatchesAvailable]) {
+    result = NO;
+  } else if ([self.deck remainingCards] >= self.numOfCardsToMatch) {
+    result = NO;
+  }
+  return result;
+  
+}
+
 
 
 @end

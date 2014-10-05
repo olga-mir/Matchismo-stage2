@@ -88,7 +88,7 @@
 
 - (void)viewDidLoad
 {
-  NSLog(@"CardGameVC: viewDidLoad");
+  NSLog(@"\n\nCardGameVC: viewDidLoad");
   
   [super viewDidLoad];
   
@@ -108,13 +108,16 @@
   g_cardsToRemove   = [[NSMutableArray alloc] init];
 }
 
+
 - (void)viewDidLayoutSubviews
 {
   NSLog(@"viewDidLayoutSubviews");
   
   [super viewDidLayoutSubviews];
 
-  // The game will start with cards already dealt from the deck.
+  [self rearrangeCardViewsWithCheckForGameOver:NO];
+  
+  // when the game starts the cards are already dealt from the deck and visible to user (either face up or face down, depending on the game)
   if (![self.cardViews count]) {
     [self createCardViews];
   } else if ([self gridNeedsUpdate]) {
@@ -200,7 +203,7 @@
 {
   NSUInteger prevNumOfCards = [self.cardViews count];
   
-  BOOL cardsAdded = [self.game addCardsToPlay:[self numOfCardsToMatch]];
+  BOOL cardsAdded = [self.game addCardsToPlay];
   
   if (!cardsAdded) { // there was a problem adding more cards to the game
     [[[UIAlertView alloc] initWithTitle:@"Add More Cards"
@@ -347,7 +350,7 @@
     NSLog(@"Removing cards");
     
     [UIView transitionWithView:self.view
-                      duration:0.4
+                      duration:DEFAULT_ANIMATION_DURATION
                        options:UIViewAnimationOptionTransitionCrossDissolve
                     animations:^{
                       for (CardView *cardView in g_cardsToRemove) {
@@ -377,9 +380,6 @@
 {
   BOOL gridHasChanged = NO;
   
-  NSLog(@"self.grid.minimumNumberOfCells = %lu, [self.game curNumberOfCardsInGame] = %lu",
-        (unsigned long)self.grid.minimumNumberOfCells, (unsigned long)[self.game curNumberOfCardsInGame]);
-  
   // The grid can change as a result of: 1) device rotation change 2) change in munber of cards (it can increase or decrease)
   if (self.grid.size.width != self.cardsDisplayArea.frame.size.width ||  // it is enough to compare only one demension since they are tight by aspect ratio
       self.grid.minimumNumberOfCells != [self.game curNumberOfCardsInGame]){
@@ -399,22 +399,19 @@
  */
 - (BOOL)rearrangeCardViewsWithCheckForGameOver:(BOOL)shouldCheckForGameOver
 {
-  NSLog(@"updateGridAndRearrangeCardViewsIfNeeded");
+  NSLog(@"updateGridAndRearrangeCardViewsIfNeeded...");
   
   SYSASSERT((self.grid.cellAspectRatio != 0), @"Grid cell aspect ratio must be set and different from 0");
   
   __block BOOL cardsWereRearranged = NO;
-  
-  NSLog(@"self.grid.minimumNumberOfCells = %lu, [self.game curNumberOfCardsInGame] = %lu", (unsigned long)self.grid.minimumNumberOfCells, (unsigned long)[self.game curNumberOfCardsInGame]);
   
   // grid setup
   self.grid.size = self.cardsDisplayArea.frame.size;
   self.grid.minimumNumberOfCells = [self.game curNumberOfCardsInGame];
   SYSASSERT(self.grid.inputsAreValid, @"Grid inputs are invalid");
   
-  
   // first find all the cardViews that are currently visible
-  NSMutableArray *visibleCardViews = [NSMutableArray new];
+  NSMutableArray *visibleCardViews = [[NSMutableArray alloc] init];
   NSUInteger currVisibleInd = 0;
   
   for (NSUInteger currInd = 0; currInd < [self.cardViews count]; currInd++) {
@@ -426,11 +423,12 @@
       currVisibleInd++;
     }
   }
+  NSLog(@"visibleCardViews count = %lu", (unsigned long)[visibleCardViews count]);
   
   // now that we have all the visible cardViews in one array, we can calculate new frame for each of them
   // it is also possible that there were no changes in the layout, that's why there is an indication for the caller should it be interested
   [UIView transitionWithView:self.view
-                    duration:0.3
+                    duration:DEFAULT_ANIMATION_DURATION
                      options:UIViewAnimationOptionTransitionNone
                   animations:^{
                     [visibleCardViews enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -458,7 +456,6 @@
                     }
                   }];
   
-  
   NSLog(@"updateGridAndRearrangeCardViewsIfNeeded returning: %d", cardsWereRearranged);
   return cardsWereRearranged;
 }
@@ -472,7 +469,7 @@
 - (void)checkForGameOver
 {
   NSLog(@"Checking for game over");
-  if(![self.game moreMatchesAvailable]) {
+  if([self.game isTheGameOver]) {
     
     NSString *msg = nil;
     

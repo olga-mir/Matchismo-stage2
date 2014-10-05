@@ -108,10 +108,10 @@
   self = [super initWithCard:setCard];
   
   if (self) {
-    _rank    = self.rank;
-    _color   = self.color;
-    _filling = self.filling;
-    _shape   = self.shape;
+    _rank    = setCard.rank;
+    _color   = setCard.color;
+    _filling = setCard.filling;
+    _shape   = setCard.shape;
 
   }  
   return self;
@@ -189,7 +189,7 @@ typedef enum RULES {
     setRules |= COLOR_RULE;
   }
   
-  NSLog(@"Set rules fulfilment: 0x%x (0001 - number, 0010 - shape, 0100 - filling, 1000 - color)", setRules);
+  //NSLog(@"Set rules fulfilment: 0x%x (0001 - number, 0010 - shape, 0100 - filling, 1000 - color)", setRules);
   
   // a group of 3 cards is only a Set when it satisfies all the above rules
   if ((setRules & ALL_RULES) == ALL_RULES) {
